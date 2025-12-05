@@ -58,7 +58,6 @@ export default function AdminDashboardPage() {
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [populating, setPopulating] = useState(false);
 
   const fetchData = async () => {

@@ -43,14 +43,14 @@ export async function POST(request: Request) {
     // Decode JWT token to get user ID
     let applicantUserId = '';
     try {
-      const jwt = require('jsonwebtoken');
-      const decoded: any = jwt.decode(token);
+      const jwt = await import('jsonwebtoken');
+      const decoded = jwt.decode(token) as { sub?: string; userId?: string; id?: string; _id?: string } | null;
       console.log('Decoded token structure:', JSON.stringify(decoded, null, 2)); // Detailed debug log
       
       if (decoded) {
         // Check common JWT fields for user ID, prioritizing 'sub' (standard subject)
         // tDarts likely uses 'sub' or 'userId'
-        applicantUserId = decoded.sub || decoded.userId || decoded.id || decoded._id;
+        applicantUserId = decoded.sub || decoded.userId || decoded.id || decoded._id || '';
         console.log('Extracted applicantUserId:', applicantUserId);
       }
     } catch (decodeError) {
