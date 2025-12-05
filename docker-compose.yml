@@ -1,0 +1,19 @@
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "6070:3000"
+    restart: always
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    command: http web:3000
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    ports:
+      - "4040:4040"
+    depends_on:
+      - web
+
