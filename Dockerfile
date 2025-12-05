@@ -23,10 +23,20 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Accept build arguments for environment variables
+ARG MONGODB_URI
+ARG NEXTAUTH_SECRET
+ARG NEXT_PUBLIC_TDARTS_API_URL
+ARG TDARTS_INTERNAL_SECRET
+ARG INTERNAL_API_SECRET
+
+# Set environment variables for build time
+ENV MONGODB_URI="mongodb://admin:admin@sironicsrv:27017"
+
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
-# ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \
@@ -40,9 +50,7 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV MONGODB_URI=mongodb://admin:admin@sironicsrv:27017
-# Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
