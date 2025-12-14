@@ -100,15 +100,18 @@ export default function ManualPage() {
             </button>
             
             {openSections.includes('points') && (
-              <div className="p-6 pt-0">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {rulesData.points.items.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 rounded-xl bg-background/50 border border-border">
-                      <span className="font-medium">{item.position}</span>
-                      <span className="text-2xl font-bold text-primary">{item.points} pont</span>
+              <div className="p-6 pt-0 space-y-4">
+                {rulesData.points.items.map((item, idx) => (
+                  <div key={idx} className="flex gap-4">
+                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-primary font-bold">
+                      {idx + 1}
                     </div>
-                  ))}
-                </div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">{item.title}</h3>
+                      <p className="text-muted-foreground">{item.content}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
