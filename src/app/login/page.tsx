@@ -14,6 +14,25 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/user/clubs");
+        if (response.ok) {
+          // User is authenticated, redirect to dashboard
+          router.replace("/dashboard");
+          return;
+        }
+      } catch {
+        // Not authenticated, stay on login page
+      }
+      setCheckingAuth(false);
+    };
+    checkAuth();
+  }, [router]);
 
   useEffect(() => {
     const errorParam = searchParams?.get("error");
@@ -55,6 +74,18 @@ function LoginForm() {
     const returnUrl = encodeURIComponent(`${window.location.origin}/auth/callback`);
     window.location.href = `${tdartsUrl}/api/auth/signin/google?callbackUrl=${returnUrl}`;
   };
+
+  // Show loading while checking authentication
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="glass-card p-8 text-center space-y-4">
+          <Loader2 className="h-12 w-12 text-primary animate-spin mx-auto" />
+          <p className="text-muted-foreground">Ellenőrzés...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">

@@ -44,7 +44,13 @@ export default function AdminDashboardPage() {
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'applications' | 'users'>('applications');
+  const [activeTab, setActiveTab] = useState<'applications' | 'users' | 'stats' | 'mailer' | 'suspicious' | 'settings' | 'manual'>('applications');
+  
+  // Stats & Mailer State
+  const [stats, setStats] = useState<any>(null);
+  const [mailerData, setMailerData] = useState({ to: '', subject: '', message: '' });
+  const [sendingEmail, setSendingEmail] = useState(false);
+
   const [removalModal, setRemovalModal] = useState<{
     open: boolean;
     applicationId: string | null;
@@ -60,12 +66,30 @@ export default function AdminDashboardPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [populating, setPopulating] = useState(false);
 
+  // Email Templates
+  const [emailTemplates, setEmailTemplates] = useState({
+    applicationReceived: 'Köszönjük az OAC jelentkezését! Hamarosan feldolgozzuk és értesítjük a döntésről.',
+    applicationApproved: 'Gratulálunk! Az OAC jelentkezése jóváhagyva. A ligája aktiválva lett.',
+    applicationRejected: 'Sajnálattal értesítjük, hogy az OAC jelentkezését elutasítottuk.'
+  });
+
+  // Quick Email Modal
+  const [quickEmailModal, setQuickEmailModal] = useState<{
+    open: boolean;
+    to: string;
+    clubName: string;
+    subject: string;
+  }>({ open: false, to: '', clubName: '', subject: '' });
+  const [quickEmailMessage, setQuickEmailMessage] = useState('');
+  const [sendingQuickEmail, setSendingQuickEmail] = useState(false);
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [appsRes, usersRes] = await Promise.all([
+      const [appsRes, usersRes, statsRes] = await Promise.all([
         fetch('/api/admin/applications'),
-        fetch('/api/admin/users')
+        fetch('/api/admin/users'),
+        fetch('/api/admin/stats')
       ]);
 
       if (appsRes.ok) {
@@ -77,12 +101,113 @@ export default function AdminDashboardPage() {
         const usersData = await usersRes.json();
         setAdminUsers(usersData.users || []);
       }
+
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setStats(statsData);
+      }
     } catch (error) {
       console.error('Fetch error:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleSendEmail = async () => {
+    if (!mailerData.to || !mailerData.subject) {
+      toast.error('Kérlek töltsd ki a címzettet és a tárgyat!');
+      return;
+    }
+    
+    setSendingEmail(true);
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: mailerData.to,
+          subject: mailerData.subject,
+          message: mailerData.message,
+          isHtml: true 
+        }),
+      });
+
+      if (!response.ok) throw new Error('Küldés sikertelen');
+      
+      toast.success('Email sikeresen elküldve!');
+      setMailerData({ to: '', subject: '', message: '' }); 
+    } catch {
+      toast.error('Hiba történt az email küldésekor');
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  const exportStats = () => {
+    if (!stats || !stats.playerStats) return;
+    
+    const dataStr = JSON.stringify(stats.playerStats, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `oac_player_stats_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleQuickEmail = (email: string, clubName: string) => {
+    setQuickEmailModal({ 
+      open: true, 
+      to: email, 
+      clubName,
+      subject: `OAC - ${clubName}` 
+    });
+    setQuickEmailMessage('');
+  };
+
+  const sendQuickEmail = async () => {
+    if (!quickEmailModal.to) return;
+    
+    setSendingQuickEmail(true);
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: quickEmailModal.to,
+          subject: quickEmailModal.subject,
+          message: quickEmailMessage,
+          isHtml: true
+        }),
+      });
+
+      if (!response.ok) throw new Error('Küldés sikertelen');
+      
+      toast.success(`Email elküldve: ${quickEmailModal.clubName}`);
+      setQuickEmailModal({ open: false, to: '', clubName: '', subject: '' });
+    } catch {
+      toast.error('Hiba történt az email küldésekor');
+    } finally {
+      setSendingQuickEmail(false);
+    }
+  };
+
+  const saveEmailTemplates = () => {
+    localStorage.setItem('oac_email_templates', JSON.stringify(emailTemplates));
+    toast.success('Email sablonok mentve!');
+  };
+
+  // Load templates from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('oac_email_templates');
+    if (saved) {
+      try {
+        setEmailTemplates(JSON.parse(saved));
+      } catch {}
+    }
+  }, []);
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -376,32 +501,62 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setActiveTab('applications')}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-              activeTab === 'applications'
-                ? 'bg-warning text-warning-foreground shadow-lg'
-                : 'glass-card hover:bg-card/60'
+            className={`px-4 py-2 rounded-xl font-semibold transition-all ${
+              activeTab === 'applications' ? 'bg-warning text-warning-foreground shadow-lg' : 'glass-card hover:bg-card/60'
             }`}
           >
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Jelentkezések ({pendingApplications.length})
-            </div>
+            <div className="flex items-center gap-2"><Building2 className="h-5 w-5" /> Jelentkezések ({pendingApplications.length})</div>
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
-              activeTab === 'users'
-                ? 'bg-warning text-warning-foreground shadow-lg'
-                : 'glass-card hover:bg-card/60'
+            className={`px-4 py-2 rounded-xl font-semibold transition-all ${
+              activeTab === 'users' ? 'bg-warning text-warning-foreground shadow-lg' : 'glass-card hover:bg-card/60'
             }`}
           >
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Admin Felhasználók ({adminUsers.length})
-            </div>
+            <div className="flex items-center gap-2"><Users className="h-5 w-5" /> Admin Felhasználók ({adminUsers.length})</div>
+          </button>
+          <button
+            onClick={() => setActiveTab('stats')}
+            className={`px-4 py-2 rounded-xl font-semibold transition-all ${
+              activeTab === 'stats' ? 'bg-warning text-warning-foreground shadow-lg' : 'glass-card hover:bg-card/60'
+            }`}
+          >
+            <div className="flex items-center gap-2"><IconDownload className="h-5 w-5" /> Statisztikák</div>
+          </button>
+          <button
+            onClick={() => setActiveTab('suspicious')}
+            className={`px-4 py-2 rounded-xl font-semibold transition-all ${
+              activeTab === 'suspicious' ? 'bg-warning text-warning-foreground shadow-lg' : 'glass-card hover:bg-card/60'
+            }`}
+          >
+            <div className="flex items-center gap-2"><IconAlertTriangle className="h-5 w-5" /> Gyanús Tevékenység</div>
+          </button>
+          <button
+            onClick={() => setActiveTab('mailer')}
+            className={`px-4 py-2 rounded-xl font-semibold transition-all ${
+              activeTab === 'mailer' ? 'bg-warning text-warning-foreground shadow-lg' : 'glass-card hover:bg-card/60'
+            }`}
+          >
+            <div className="flex items-center gap-2"><IconMail className="h-5 w-5" /> Email Küldés</div>
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`px-4 py-2 rounded-xl font-semibold transition-all ${
+              activeTab === 'settings' ? 'bg-warning text-warning-foreground shadow-lg' : 'glass-card hover:bg-card/60'
+            }`}
+          >
+            <div className="flex items-center gap-2"><IconSettings className="h-5 w-5" /> Beállítások</div>
+          </button>
+          <button
+            onClick={() => setActiveTab('manual')}
+            className={`px-4 py-2 rounded-xl font-semibold transition-all ${
+              activeTab === 'manual' ? 'bg-warning text-warning-foreground shadow-lg' : 'glass-card hover:bg-card/60'
+            }`}
+          >
+            <div className="flex items-center gap-2"><IconBook className="h-5 w-5" /> Útmutató</div>
           </button>
         </div>
 
@@ -454,6 +609,15 @@ export default function AdminDashboardPage() {
                             <XCircle className="h-5 w-5" />
                             Elutasít
                           </button>
+                          {app.applicantEmail && (
+                            <button
+                              onClick={() => handleQuickEmail(app.applicantEmail!, app.clubName)}
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-primary/50 hover:bg-primary/10 transition-colors"
+                              title="Email küldése"
+                            >
+                              <IconMail className="h-5 w-5" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -675,7 +839,376 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         )}
+
+        {/* Mailer Tab */}
+        {activeTab === 'mailer' && (
+          <div className="glass-card p-6">
+             <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-red-500/20 rounded-full">
+                   <IconMail className="h-6 w-6 text-red-500" />
+                </div>
+                <h2 className="text-2xl font-semibold">Email Küldés</h2>
+             </div>
+             
+             <div className="space-y-4 max-w-2xl">
+                <div>
+                   <label className="block text-sm font-medium mb-1">Címzett (Email)</label>
+                   <input 
+                      type="email" 
+                      value={mailerData.to}
+                      onChange={(e) => setMailerData({...mailerData, to: e.target.value})}
+                      className="w-full h-12 px-4 bg-background/50 border border-border rounded-xl"
+                      placeholder="pelda@email.com"
+                   />
+                </div>
+                <div>
+                   <label className="block text-sm font-medium mb-1">Tárgy</label>
+                   <input 
+                      type="text" 
+                      value={mailerData.subject}
+                      onChange={(e) => setMailerData({...mailerData, subject: e.target.value})}
+                      className="w-full h-12 px-4 bg-background/50 border border-border rounded-xl"
+                      placeholder="Tárgy..."
+                   />
+                </div>
+                <div>
+                   <label className="block text-sm font-medium mb-1">Üzenet</label>
+                   <textarea 
+                      value={mailerData.message}
+                      onChange={(e) => setMailerData({...mailerData, message: e.target.value})}
+                      className="w-full h-32 p-4 bg-background/50 border border-border rounded-xl"
+                      placeholder="Írd ide az üzenetet..."
+                   />
+                   <p className="text-xs text-muted-foreground mt-1">Az email automatikusan a piros OAC stílusban kerül kiküldésre.</p>
+                </div>
+                <button 
+                  onClick={handleSendEmail} 
+                  disabled={sendingEmail || !mailerData.to || !mailerData.subject}
+                  className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {sendingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <IconSend className="h-4 w-4" />}
+                  Küldés
+                </button>
+             </div>
+          </div>
+        )}
+
+        {/* Stats Tab */}
+        {activeTab === 'stats' && (
+          <div className="space-y-8">
+             {/* Global Stats */}
+             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="glass-card p-6 flex flex-col items-center">
+                   <span className="text-4xl font-bold text-primary">{stats?.globalStats?.totalPlayers || 0}</span>
+                   <span className="text-sm text-muted-foreground">OAC Játékos</span>
+                </div>
+                <div className="glass-card p-6 flex flex-col items-center">
+                   <span className="text-4xl font-bold text-primary">{stats?.globalStats?.totalMatches || 0}</span>
+                   <span className="text-sm text-muted-foreground">OAC Meccs</span>
+                </div>
+                <div className="glass-card p-6 flex flex-col items-center">
+                   <span className="text-4xl font-bold text-primary">{stats?.globalStats?.totalTournaments || 0}</span>
+                   <span className="text-sm text-muted-foreground">OAC Verseny</span>
+                </div>
+                <div className="glass-card p-6 flex flex-col items-center">
+                   <span className="text-4xl font-bold text-primary">{stats?.globalStats?.totalLeagues || 0}</span>
+                   <span className="text-sm text-muted-foreground">OAC Liga</span>
+                </div>
+             </div>
+
+             {/* League Rankings - Expand/Collapse */}
+             <div className="glass-card p-6">
+                <div className="flex justify-between items-center mb-6">
+                   <h2 className="text-xl font-semibold flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Liga Ranglisták (Csak OAC)
+                   </h2>
+                   <button 
+                      onClick={exportStats}
+                      className="px-4 py-2 border border-border rounded-xl hover:bg-card/50 flex items-center gap-2"
+                   >
+                      <IconDownload className="h-4 w-4" />
+                      Export JSON
+                   </button>
+                </div>
+
+                <div className="space-y-4">
+                   {stats?.leagueRankings?.length > 0 ? (
+                      stats.leagueRankings.map((league: any) => (
+                         <LeagueRankingCard key={league.leagueId} league={league} />
+                      ))
+                   ) : (
+                      <div className="text-center py-12 text-muted-foreground">
+                         <p>Nincs OAC liga.</p>
+                      </div>
+                   )}
+                </div>
+             </div>
+
+             {/* Player Match Stats Table */}
+             <div className="glass-card p-6">
+                <h2 className="text-xl font-semibold flex items-center gap-2 mb-6">
+                   <Users className="h-5 w-5" />
+                   Játékos Meccs Statisztikák (OAC)
+                </h2>
+
+                <div className="overflow-x-auto">
+                   <table className="w-full text-sm">
+                      <thead className="bg-muted/30">
+                         <tr>
+                            <th className="p-3 text-left">Név</th>
+                            <th className="p-3 text-right">Meccsek</th>
+                            <th className="p-3 text-right">Győzelmek</th>
+                            <th className="p-3 text-right">Átlag</th>
+                            <th className="p-3 text-right">180-ak</th>
+                            <th className="p-3 text-right">Legnagyobb Kiszálló</th>
+                         </tr>
+                      </thead>
+                      <tbody>
+                         {stats?.playerMatchStats?.slice(0, 50).map((player: any) => (
+                            <tr key={player.playerId} className="border-b border-border/50 hover:bg-muted/10">
+                               <td className="p-3 font-medium">{player.name}</td>
+                               <td className="p-3 text-right">{player.matchesPlayed}</td>
+                               <td className="p-3 text-right">{player.matchesWon} ({player.winRate}%)</td>
+                               <td className="p-3 text-right">{player.average}</td>
+                               <td className="p-3 text-right">{player.total180s}</td>
+                               <td className="p-3 text-right">{player.highestCheckout}</td>
+                            </tr>
+                         ))}
+                      </tbody>
+                   </table>
+                   <p className="text-xs text-muted-foreground mt-4 text-center">Top 50 OAC játékos meccsek szerint</p>
+                </div>
+             </div>
+          </div>
+        )}
+
+        {/* Suspicious Activity Tab */}
+        {activeTab === 'suspicious' && (
+          <div className="glass-card p-6">
+             <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-red-500/20 rounded-full animate-pulse-glow">
+                   <IconAlertTriangle className="h-6 w-6 text-red-500" />
+                </div>
+                <div>
+                   <h2 className="text-2xl font-bold text-red-500">Gyanús Tevékenységek</h2>
+                   <p className="text-sm text-muted-foreground">Kézzel felülírt meccsek és eredmények</p>
+                </div>
+             </div>
+
+             <div className="space-y-4">
+                {stats?.suspiciousMatches?.length > 0 ? (
+                   stats.suspiciousMatches.map((match: any) => (
+                      <div key={match._id} className="border border-red-500/30 bg-red-500/5 rounded-xl p-4 flex items-center justify-between">
+                         <div>
+                            <div className="font-semibold text-red-400 mb-1">Kézi felülírás detektálva</div>
+                            <p className="text-sm">
+                               <span className="font-semibold">{match.player1?.name || 'Ismeretlen'}</span> vs <span className="font-semibold">{match.player2?.name || 'Ismeretlen'}</span>
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                               Verseny: {match.tournamentRef?.name || 'Ismeretlen'} | Dátum: {new Date(match.overrideTimestamp || match.updatedAt).toLocaleString('hu-HU')}
+                            </p>
+                            <p className="text-xs text-red-400 mt-1">
+                               Győztes manuálisan beállítva: {match.winnerId?.name}
+                            </p>
+                         </div>
+                         <div className="text-right">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                               MANUAL OVERRIDE
+                            </span>
+                         </div>
+                      </div>
+                   ))
+                ) : (
+                   <div className="text-center py-12 text-muted-foreground">
+                      <CheckCircle2 className="h-12 w-12 mx-auto mb-2 text-green-500/50" />
+                      <p>Nincs gyanús tevékenység.</p>
+                   </div>
+                )}
+             </div>
+          </div>
+        )}
+
+        {/* Settings Tab - Email Templates */}
+        {activeTab === 'settings' && (
+          <div className="glass-card p-6">
+             <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-primary/20 rounded-full">
+                   <IconSettings className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                   <h2 className="text-2xl font-bold">Beállítások</h2>
+                   <p className="text-sm text-muted-foreground">Automatikus email sablonok szerkesztése</p>
+                </div>
+             </div>
+
+             <div className="space-y-6 max-w-2xl">
+                <div>
+                   <label className="block text-sm font-semibold mb-2">Jelentkezés beérkezése email</label>
+                   <p className="text-xs text-muted-foreground mb-2">Automatikusan kiküldésre kerül amikor új jelentkezés érkezik.</p>
+                   <textarea 
+                      value={emailTemplates.applicationReceived}
+                      onChange={(e) => setEmailTemplates({...emailTemplates, applicationReceived: e.target.value})}
+                      className="w-full h-24 p-4 bg-background/50 border border-border rounded-xl"
+                   />
+                </div>
+                
+                <div>
+                   <label className="block text-sm font-semibold mb-2">Jóváhagyás email</label>
+                   <p className="text-xs text-muted-foreground mb-2">Kiküldésre kerül amikor jóváhagyunk egy jelentkezést.</p>
+                   <textarea 
+                      value={emailTemplates.applicationApproved}
+                      onChange={(e) => setEmailTemplates({...emailTemplates, applicationApproved: e.target.value})}
+                      className="w-full h-24 p-4 bg-background/50 border border-border rounded-xl"
+                   />
+                </div>
+                
+                <div>
+                   <label className="block text-sm font-semibold mb-2">Elutasítás email</label>
+                   <p className="text-xs text-muted-foreground mb-2">Kiküldésre kerül amikor elutasítunk egy jelentkezést.</p>
+                   <textarea 
+                      value={emailTemplates.applicationRejected}
+                      onChange={(e) => setEmailTemplates({...emailTemplates, applicationRejected: e.target.value})}
+                      className="w-full h-24 p-4 bg-background/50 border border-border rounded-xl"
+                   />
+                </div>
+
+                <button 
+                  onClick={saveEmailTemplates}
+                  className="px-6 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl transition-colors flex items-center gap-2"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  Sablonok Mentése
+                </button>
+                <p className="text-xs text-muted-foreground">A sablonok a böngészőben tárolódnak.</p>
+             </div>
+          </div>
+        )}
+
+        {/* Manual Tab */}
+        {activeTab === 'manual' && (
+          <div className="glass-card p-6">
+             <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-blue-500/20 rounded-full">
+                   <IconBook className="h-6 w-6 text-blue-500" />
+                </div>
+                <div>
+                   <h2 className="text-2xl font-bold">Admin Útmutató</h2>
+                   <p className="text-sm text-muted-foreground">OAC Admin Dashboard használati útmutató</p>
+                </div>
+             </div>
+
+             <div className="prose prose-invert max-w-none space-y-8">
+                <section>
+                   <h3 className="text-xl font-semibold text-primary mb-3">📋 Jelentkezések Kezelése</h3>
+                   <ul className="space-y-2 text-sm">
+                      <li><strong>Jóváhagyás:</strong> A klub OAC státuszt kap, automatikusan létrejön a nemzeti liga.</li>
+                      <li><strong>Elutasítás:</strong> A klub nem kap OAC státuszt. Megadható az ok.</li>
+                      <li><strong>Email gomb:</strong> Közvetlenül küldhetsz emailt a jelentkezőnek.</li>
+                      <li><strong>Eltávolítás kérés:</strong> Ha egy klub kéri az OAC státusz eltávolítását, itt jelenik meg.</li>
+                   </ul>
+                </section>
+
+                <section>
+                   <h3 className="text-xl font-semibold text-primary mb-3">📊 Statisztikák</h3>
+                   <ul className="space-y-2 text-sm">
+                      <li><strong>OAC-only adatok:</strong> Csak a hitelesített (verified) ligák adatai jelennek meg.</li>
+                      <li><strong>Liga Ranglisták:</strong> Kattints egy ligára a részletes ranglista megtekintéséhez.</li>
+                      <li><strong>Export:</strong> JSON formátumban exportálhatod az összes játékos statisztikát.</li>
+                   </ul>
+                </section>
+
+                <section>
+                   <h3 className="text-xl font-semibold text-primary mb-3">🚨 Gyanús Tevékenységek</h3>
+                   <ul className="space-y-2 text-sm">
+                      <li>Automatikusan megjelennek azok a meccsek, amelyeket <strong>manuálisan módosítottak</strong>.</li>
+                      <li>Pl. ha egy admin utólag megváltoztatta egy meccs eredményét.</li>
+                      <li>Segít a tisztességtelen játék felderítésében.</li>
+                   </ul>
+                </section>
+
+                <section>
+                   <h3 className="text-xl font-semibold text-primary mb-3">✉️ Email Küldés</h3>
+                   <ul className="space-y-2 text-sm">
+                      <li><strong>Manuális küldés:</strong> Az &quot;Email Küldés&quot; fülön bármelyik email címre küldhetsz üzenetet.</li>
+                      <li><strong>Gyors email:</strong> A jelentkezések mellett található email gombbal közvetlenül a jelentkezőnek küldhetsz.</li>
+                      <li>Az emailek automatikusan OAC stílusban (piros fejléc) kerülnek kiküldésre.</li>
+                   </ul>
+                </section>
+
+                <section>
+                   <h3 className="text-xl font-semibold text-primary mb-3">⚙️ Beállítások</h3>
+                   <ul className="space-y-2 text-sm">
+                      <li><strong>Email sablonok:</strong> Szerkesztheted az automatikus értesítő emailek szövegét.</li>
+                      <li>A sablonok a böngészőben tárolódnak (localStorage).</li>
+                   </ul>
+                </section>
+
+                <section className="border-t border-border pt-6">
+                   <h3 className="text-xl font-semibold text-muted-foreground mb-3">🔗 További Információk</h3>
+                   <p className="text-sm text-muted-foreground">
+                      OAC ligák azonosítása: A <code className="bg-muted px-1 rounded">verified: true</code> mezővel rendelkező ligák tekintendők OAC ligának.
+                      A ligához csatolt versenyek (<code className="bg-muted px-1 rounded">attachedTournaments</code>) az OAC versenyek.
+                   </p>
+                </section>
+             </div>
+          </div>
+        )}
       </div>
+
+      {/* Quick Email Modal */}
+      {quickEmailModal.open && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="glass-card max-w-lg w-full mx-4 p-6 space-y-4">
+            <h3 className="text-xl font-bold flex items-center gap-2">
+              <IconMail className="h-5 w-5 text-primary" />
+              Email küldése
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Címzett: <span className="font-semibold text-foreground">{quickEmailModal.to}</span>
+            </p>
+            
+            <div>
+               <label className="block text-sm font-medium mb-1">Tárgy</label>
+               <input 
+                  type="text" 
+                  value={quickEmailModal.subject}
+                  onChange={(e) => setQuickEmailModal({...quickEmailModal, subject: e.target.value})}
+                  className="w-full h-10 px-4 bg-background/50 border border-border rounded-xl"
+               />
+            </div>
+            
+            <div>
+               <label className="block text-sm font-medium mb-1">Üzenet</label>
+               <textarea 
+                  value={quickEmailMessage}
+                  onChange={(e) => setQuickEmailMessage(e.target.value)}
+                  className="w-full h-32 p-4 bg-background/50 border border-border rounded-xl"
+                  placeholder="Írd ide az üzenetet..."
+               />
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={() => setQuickEmailModal({ open: false, to: '', clubName: '', subject: '' })}
+                className="flex-1 px-4 py-2 rounded-xl border-2 border-border hover:bg-muted transition-colors"
+              >
+                Mégse
+              </button>
+              <button
+                onClick={sendQuickEmail}
+                disabled={sendingQuickEmail || !quickEmailMessage}
+                className="flex-1 px-4 py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {sendingQuickEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <IconSend className="h-4 w-4" />}
+                Küldés
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
 
       {/* Removal Type Selection Modal */}
       {removalModal.open && (
@@ -741,4 +1274,107 @@ export default function AdminDashboardPage() {
       )}
     </div>
   );
+}
+
+// League Ranking Card with Expand/Collapse
+function LeagueRankingCard({ league }: { league: any }) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <div className="border border-border rounded-xl overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-4 bg-muted/20 hover:bg-muted/40 transition-colors text-left"
+      >
+        <div className="flex items-center gap-3">
+          <div className={`transform transition-transform ${isOpen ? 'rotate-90' : ''}`}>
+            <IconChevronRight className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-semibold">{league.leagueName}</h3>
+            <p className="text-xs text-muted-foreground">{league.clubName} • {league.clubCity}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <span>{league.playerCount} játékos</span>
+          <span>{league.tournamentCount} verseny</span>
+        </div>
+      </button>
+      
+      {isOpen && (
+        <div className="p-4 bg-background/50">
+          {league.players?.length > 0 ? (
+            <table className="w-full text-sm">
+              <thead className="bg-muted/30">
+                <tr>
+                  <th className="p-2 text-left">#</th>
+                  <th className="p-2 text-left">Játékos</th>
+                  <th className="p-2 text-right">Pont</th>
+                  <th className="p-2 text-right">Versenyek</th>
+                </tr>
+              </thead>
+              <tbody>
+                {league.players.slice(0, 20).map((player: any) => (
+                  <tr key={player.playerId} className="border-b border-border/30 hover:bg-muted/10">
+                    <td className="p-2 font-bold text-primary">{player.position}</td>
+                    <td className="p-2">{player.name}</td>
+                    <td className="p-2 text-right font-semibold">{player.totalPoints}</td>
+                    <td className="p-2 text-right">{player.tournamentsPlayed}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-center py-4 text-muted-foreground">Nincs még játékos ebben a ligában.</p>
+          )}
+          {league.players?.length > 20 && (
+            <p className="text-xs text-muted-foreground text-center mt-2">...és további {league.players.length - 20} játékos</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function IconChevronRight(props: any) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+  );
+}
+
+// Icons
+function IconMail(props: any) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+  );
+}
+
+function IconSend(props: any) {
+    return (
+      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+    );
+}
+
+function IconDownload(props: any) {
+    return (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+    );
+}
+
+function IconAlertTriangle(props: any) {
+    return (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+    );
+}
+
+function IconSettings(props: any) {
+    return (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+    );
+}
+
+function IconBook(props: any) {
+    return (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+    );
 }

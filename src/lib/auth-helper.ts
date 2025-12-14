@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 /**
  * Helper function to get session in NextAuth v5

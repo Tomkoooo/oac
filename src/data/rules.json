@@ -1,0 +1,48 @@
+{
+    "general": {
+        "title": "Általános Részvételi Szabályzat",
+        "description": "A Magyar Nemzeti Amatőr Ligában (OAC) való részvétel alapvető feltételei.",
+        "items": [
+            {
+                "title": "Részvétel feltételei",
+                "content": "A ligában bármely, a tDarts platformon regisztrált és hitelesített klub részt vehet."
+            },
+            {
+                "title": "Játékosok",
+                "content": "Csak amatőr játékosok nevezhetnek. Igazolt profi versenyzők (MDSZ versenyengedéllyel rendelkezők) nem indulhatnak az amatőr ligában."
+            },
+            {
+                "title": "Versenyek rendezése",
+                "content": "Minden klub köteles legalább havi 4 versenyt rendezni a liga keretein belül."
+            }
+        ]
+    },
+    "points": {
+        "title": "Pontozási Rendszer",
+        "description": "Az egységes pontozási rendszer biztosítja a fair rangsorolást.",
+        "items": [
+            {
+                "title": "Alap pontok",
+                "content": "Minden induló 5 pontot kap a részvételért."
+            },
+            {
+                "title": "Helyezés pontok",
+                "content": "1. hely: 50 pont, 2. hely: 30 pont, 3. hely: 20 pont. A további helyezések pontjai a résztvevők számától függnek."
+            },
+            {
+                "title": "Bónusz pontok",
+                "content": "180-as dobás: +2 pont, 100+ kiszálló: +3 pont."
+            }
+        ]
+    },
+    "application": {
+        "title": "Jelentkezés Menete",
+        "description": "Lépésről lépésre útmutató a klubok csatlakozásához.",
+        "steps": [
+            "Regisztráld klubodat a tDarts platformon.",
+            "Töltsd ki az OAC jelentkezési űrlapot az 'Adminisztráció' menüpontban.",
+            "Várd meg a jóváhagyást (általában 24-48 óra).",
+            "Kezdd el szervezni a versenyeket!"
+        ]
+    }
+}

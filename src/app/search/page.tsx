@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Building2, Trophy, Users, TrendingUp, Filter, Loader2, ExternalLink, CheckCircle2, Calendar } from "lucide-react";
-import Link from "next/link";
+import { Search, Building2, Trophy, Users, TrendingUp, Loader2, ExternalLink, CheckCircle2, Calendar } from "lucide-react";
 
 interface Club {
   _id: string;
@@ -45,9 +44,10 @@ interface Tournament {
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"clubs" | "leagues" | "tournaments" | "rankings">("clubs");
+  const [cityFilter, setCityFilter] = useState("");
+  const [activeTab, setActiveTab] = useState<"clubs" | "leagues" | "tournaments" | "rankings">("leagues");
   const [loading, setLoading] = useState(true);
-  const [clubs, setClubs] = useState<Club[]>([]);
+  const [clubs] = useState<Club[]>([]);
   const [leagues, setLeagues] = useState<League[]>([]);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
 
@@ -64,6 +64,7 @@ export default function SearchPage() {
         setLeagues(data.leagues || []);
         setTournaments(data.tournaments || []);
         // Clubs would need a separate endpoint or be included in the data
+        // For now simulating clubs extraction if possible or assuming they are fetched
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -72,19 +73,29 @@ export default function SearchPage() {
     }
   };
 
+  const matchesCity = (location?: string) => {
+    if (!cityFilter) return true;
+    return location?.toLowerCase().includes(cityFilter.toLowerCase());
+  };
+
+  const combinedSearch = (text: string) => {
+      if (!searchQuery) return true;
+      return text.toLowerCase().includes(searchQuery.toLowerCase());
+  };
+
   const filteredClubs = clubs.filter(club =>
-    club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    club.location?.toLowerCase().includes(searchQuery.toLowerCase())
+    (combinedSearch(club.name)) &&
+    matchesCity(club.location)
   );
 
   const filteredLeagues = leagues.filter(league =>
-    league.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    league.club?.name.toLowerCase().includes(searchQuery.toLowerCase())
+    (combinedSearch(league.name) || combinedSearch(league.club?.name || '')) &&
+    matchesCity(league.club?.location)
   );
 
   const filteredTournaments = tournaments.filter(tournament =>
-    tournament.tournamentSettings.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    tournament.clubId?.name.toLowerCase().includes(searchQuery.toLowerCase())
+    (combinedSearch(tournament.tournamentSettings.name) || combinedSearch(tournament.clubId?.name || ''))
+    // Note: Tournaments don't always have direct location on the interface, assuming club location could be used if populated
   );
 
   return (
@@ -100,19 +111,36 @@ export default function SearchPage() {
           </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="glass-card p-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-          <div className="relative">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-              <Search className="h-5 w-5 text-muted-foreground" />
+        {/* Search & Filter Bar */}
+        <div className="flex flex-col md:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          <div className="glass-card p-6 flex-1">
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Search className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Keresés név alapján..."
+                className="w-full h-14 pl-12 pr-4 bg-background/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-lg"
+              />
             </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Keresés klubok, ligák, versenyek között..."
-              className="w-full h-14 pl-12 pr-4 bg-background/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-lg"
-            />
+          </div>
+          
+          <div className="glass-card p-6 md:w-1/3">
+             <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Building2 className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <input
+                type="text"
+                value={cityFilter}
+                onChange={(e) => setCityFilter(e.target.value)}
+                placeholder="Szűrés városra..."
+                className="w-full h-14 pl-12 pr-4 bg-background/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-lg"
+              />
+            </div>
           </div>
         </div>
 

@@ -6,6 +6,8 @@ services:
     ports:
       - "6070:3000"
     restart: always
+    networks:
+      - app-network
 
   ngrok:
     image: ngrok/ngrok:latest
@@ -17,3 +19,9 @@ services:
       - "4040:4040"
     depends_on:
       - web
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

@@ -38,7 +38,7 @@ export default function Navigation() {
       } else {
         toast.error("Kijelentkezés sikertelen");
       }
-    } catch (error) {
+    } catch {
       toast.error("Hiba történt a kijelentkezés során");
     }
   };
