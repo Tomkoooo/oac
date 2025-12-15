@@ -1,53 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Building2, Trophy, Users, TrendingUp, Loader2, ExternalLink, CheckCircle2, Calendar } from "lucide-react";
-
-interface Club {
-  _id: string;
-  name: string;
-  location?: string;
-  verified: boolean;
-}
-
-interface League {
-  _id: string;
-  name: string;
-  description?: string;
-  verified: boolean;
-  club?: {
-    _id: string;
-    name: string;
-    location?: string;
-  };
-  startDate?: string;
-  endDate?: string;
-}
-
-interface Tournament {
-  _id: string;
-  tournamentSettings: {
-    name: string;
-    startDate: string;
-    status: string;
-  };
-  clubId?: {
-    _id: string;
-    name: string;
-  };
-  league?: {
-    _id: string;
-    name: string;
-    verified: boolean;
-  };
-}
+import { Search, Building2, Trophy, Users, TrendingUp, Loader2, ExternalLink, CheckCircle2, Calendar, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { getPublicData, Club, League, Tournament } from "@/lib/tdarts-api";
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [activeTab, setActiveTab] = useState<"clubs" | "leagues" | "tournaments" | "rankings">("leagues");
   const [loading, setLoading] = useState(true);
-  const [clubs] = useState<Club[]>([]);
+  const [clubs, setClubs] = useState<Club[]>([]);
   const [leagues, setLeagues] = useState<League[]>([]);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
 
@@ -58,14 +21,10 @@ export default function SearchPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_TDARTS_API_URL || 'https://tdarts.sironic.hu'}/api/public/data?type=all`);
-      if (response.ok) {
-        const data = await response.json();
-        setLeagues(data.leagues || []);
-        setTournaments(data.tournaments || []);
-        // Clubs would need a separate endpoint or be included in the data
-        // For now simulating clubs extraction if possible or assuming they are fetched
-      }
+      const data = await getPublicData('all');
+      setLeagues(data.leagues || []);
+      setTournaments(data.tournaments || []);
+      setClubs(data.clubs || []);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -89,13 +48,13 @@ export default function SearchPage() {
   );
 
   const filteredLeagues = leagues.filter(league =>
-    (combinedSearch(league.name) || combinedSearch(league.club?.name || '')) &&
-    matchesCity(league.club?.location)
+    league.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (typeof league.club === 'object' && league.club?.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const filteredTournaments = tournaments.filter(tournament =>
-    (combinedSearch(tournament.tournamentSettings.name) || combinedSearch(tournament.clubId?.name || ''))
-    // Note: Tournaments don't always have direct location on the interface, assuming club location could be used if populated
+    tournament.tournamentSettings.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (typeof tournament.clubId === 'object' && tournament.clubId?.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -241,7 +200,7 @@ export default function SearchPage() {
                               </div>
                               <div>
                                 <h3 className="font-semibold text-lg">{league.name}</h3>
-                                {league.club && (
+                                {league.club && typeof league.club === 'object' && (
                                   <p className="text-sm text-muted-foreground">{league.club.name}</p>
                                 )}
                               </div>
@@ -299,39 +258,52 @@ export default function SearchPage() {
                             </div>
                             <div>
                               <h3 className="font-semibold">{tournament.tournamentSettings.name}</h3>
-                              {tournament.clubId && (
+                              {tournament.clubId && typeof tournament.clubId === 'object' && (
                                 <p className="text-xs text-muted-foreground">{tournament.clubId.name}</p>
                               )}
                             </div>
                           </div>
-                          {tournament.league && (
-                            <div className="flex items-center gap-2 mb-3">
-                              <Trophy className="h-4 w-4 text-primary" />
-                              <span className="text-sm text-muted-foreground">{tournament.league.name}</span>
-                              {tournament.league.verified && (
-                                <CheckCircle2 className="h-4 w-4 text-success" />
+                          {tournament.league && typeof tournament.league === 'object' && (
+                            <div className="flex flex-col gap-1 mb-3">
+                              <div className="flex items-center gap-2">
+                                <Trophy className="h-4 w-4 text-primary" />
+                                <span className="text-sm text-muted-foreground">{tournament.league.name}</span>
+                                {tournament.league.verified && (
+                                  <CheckCircle2 className="h-4 w-4 text-success" />
+                                )}
+                              </div>
+                              {tournament.league.club && typeof tournament.league.club === 'object' && (
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground ml-6">
+                                  <Building2 className="h-3 w-3" />
+                                  <span>{tournament.league.club.name}</span>
+                                </div>
                               )}
                             </div>
                           )}
+                          <div className="flex items-center text-sm text-muted-foreground mb-2">
+                            <MapPin className="mr-1 h-4 w-4" />
+                            <span>{tournament.tournamentSettings.location || (typeof tournament.clubId === 'object' && tournament.clubId?.location) || 'Unknown Location'}</span>
+                          </div>
                           <div className="flex items-center justify-between">
                             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              tournament.tournamentSettings.status === 'in_progress'
-                                ? 'bg-success/20 text-success'
+                              ['active', 'group-stage', 'knockout'].includes(tournament.tournamentSettings.status)
+                                ? "bg-green-100 text-green-700"
                                 : tournament.tournamentSettings.status === 'finished'
-                                ? 'bg-muted/20 text-muted-foreground'
-                                : 'bg-warning/20 text-warning'
+                                ? "bg-gray-100 text-gray-700"
+                                : "bg-blue-100 text-blue-700"
                             }`}>
-                              {tournament.tournamentSettings.status === 'in_progress' ? 'Folyamatban' :
-                               tournament.tournamentSettings.status === 'finished' ? 'Befejezett' : 'Hamarosan'}
+                              {['active', 'group-stage', 'knockout'].includes(tournament.tournamentSettings.status) 
+                                ? "Active" 
+                                : tournament.tournamentSettings.status === 'finished' 
+                                ? "Finished" 
+                                : "Upcoming"}
                             </span>
-                            <a
-                              href={`https://tdarts.sironic.hu/tournaments/${tournament._id}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-primary hover:text-primary-hover transition-colors"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </a>
+                            
+                            <Button variant="outline" size="sm" asChild>
+                                <a href={`${process.env.NEXT_PUBLIC_TDARTS_API_URL || 'https://tdarts.sironic.hu'}/board/${tournament._id}`} target="_blank" rel="noopener noreferrer">
+                                    View Details
+                                </a>
+                            </Button>
                           </div>
                         </div>
                       ))}

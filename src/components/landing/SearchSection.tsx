@@ -24,7 +24,7 @@ export function SearchSection() {
   }, []);
 
   const filteredLeagues = data.leagues.filter((l) => l.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  const filteredTournaments = data.tournaments.filter((t) => t.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredTournaments = data.tournaments.filter((t) => t.tournamentSettings.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <section className="w-full py-12 md:py-24 lg:py-32 bg-muted/50">
@@ -96,10 +96,10 @@ export function SearchSection() {
                 <Card key={tournament._id}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
-                        <CardTitle className="text-lg">{tournament.name}</CardTitle>
+                        <CardTitle className="text-lg">{tournament.tournamentSettings.name}</CardTitle>
                         <Badge variant="outline">Upcoming</Badge>
                     </div>
-                    <CardDescription>{new Date(tournament.date).toLocaleDateString()}</CardDescription>
+                    <CardDescription>{new Date(tournament.tournamentSettings.startDate).toLocaleDateString()}</CardDescription>
                   </CardHeader>
                   <CardFooter>
                     <Button variant="secondary" size="sm" className="w-full">Register</Button>
