@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Trophy, LogOut } from "lucide-react";
+import Image from "next/image";
+import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
@@ -47,8 +48,8 @@ export default function Navigation() {
     <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-border/40 backdrop-blur-xl bg-background/90 shadow-lg">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center space-x-2 transition-transform hover:scale-105">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary shadow-lg shadow-primary/30">
-            <Trophy className="h-6 w-6 text-primary-foreground" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg shadow-lg shadow-primary/30">
+            <Image src="/tdarts_fav.svg" alt="OAC" width={28} height={28} />
           </div>
           <div className="flex flex-col">
             <span className="text-lg font-bold leading-none">OAC Portál</span>

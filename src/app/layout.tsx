@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import { Trophy } from "lucide-react";
+import Image from "next/image";
 import { Toaster } from "react-hot-toast";
 import Navigation from "@/components/Navigation";
 
@@ -49,6 +49,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
         <meta name="theme-color" content="#b62441" />
         <meta name="color-scheme" content="dark" />
+        <link rel="icon" href="/tdarts_fav.svg" type="image/svg+xml" />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <Toaster position="top-left" reverseOrder={false}/>
@@ -65,7 +66,7 @@ export default function RootLayout({
           <div className="container">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center space-x-2">
-                <Trophy className="h-5 w-5 text-primary" />
+                <Image src="/tdarts_fav.svg" alt="OAC" width={20} height={20} />
                 <p className="text-sm text-muted-foreground">
                   © 2024 OAC Portál. Minden jog fenntartva.
                 </p>

@@ -31,7 +31,7 @@ ARG TDARTS_INTERNAL_SECRET
 ARG INTERNAL_API_SECRET
 
 # Set environment variables for build time
-ENV MONGODB_URI="mongodb://admin:admin@sironicsrv:27017"
+ENV MONGODB_URI=mongodb://admin:admin@100.116.101.72:27017/
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry

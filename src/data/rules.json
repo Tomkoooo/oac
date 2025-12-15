@@ -1,4 +1,74 @@
 {
+    "important": {
+        "title": "Fontos Információ",
+        "description": "Tudnivalók a jelentkezés előtt.",
+        "items": [
+            {
+                "title": "Egyesületek",
+                "content": "Az egyesületeknek nem szükséges itt a jelentkezés - őket emailben tájékoztatjuk a felvételről."
+            },
+            {
+                "title": "Jelentkezési feltételek",
+                "content": "Minden olyan klub/kocsma/helység jelentkezhet akik nem egyesületi tagok, ahol minimum 4 tábla van."
+            },
+            {
+                "title": "Dobóállás követelmények",
+                "content": "A dobóállásoknak a darts szabályainak kell megfelelniük. A dobóállástól minimum 5 méterre kell, hogy legyen ital kiadási lehetőség."
+            },
+            {
+                "title": "Egyszeri díj",
+                "content": "Ha a feltételek teljesültek, egy egyszeri 20.000 Ft-os díj megfizetésével lehet jelentkezni."
+            }
+        ]
+    },
+    "competition": {
+        "title": "Verseny Szabályzatok",
+        "description": "A versenyek szervezésének szabályai.",
+        "items": [
+            {
+                "title": "Heti limit",
+                "content": "Minden hely heti maximum 1 versenyt szervezhet a ligába."
+            },
+            {
+                "title": "Létszám",
+                "content": "Pontérvényességhez minimum 16 fő részvétele szükséges."
+            },
+            {
+                "title": "Díjazás",
+                "content": "Díjazás minimum 60%-os cashback formájában. A maximum nevezési díj 3000 Ft/fő lehet."
+            },
+            {
+                "title": "Lebonyolítás",
+                "content": "A verseny szabályokat valamint a levezetést a tDarts platform kezeli."
+            }
+        ]
+    },
+    "league": {
+        "title": "Liga Tudnivalók",
+        "description": "Hogyan működik a pontozás és a bajnokságok.",
+        "items": [
+            {
+                "title": "Helyi ponttáblázat",
+                "content": "Minden helységben saját ponttáblázat alakul ki, ami majd az évvégi táblázathoz lesz szükséges."
+            },
+            {
+                "title": "Negyedév bajnoka",
+                "content": "Negyedévente kerül megrendezésre a 'Negyedév Bajnoka' döntő, amelyre az adott negyedévben legalább 1 versenyt megnyerő játékosok kapnak meghívót."
+            },
+            {
+                "title": "Évvégi nagydöntő bejutás",
+                "content": "A negyedévbajnoka 1.-8. helyig szereplő emberek meghívást kapnak az évvégi nagy döntőbe."
+            },
+            {
+                "title": "Teljesítmény alapú meghívás",
+                "content": "Az évvégi nagydöntőbe továbbá teljesítmény alapú meghívást lehet szerezni, valamint egy összesített ponttáblázatból lehet bekerülni."
+            },
+            {
+                "title": "Fair bejutás",
+                "content": "A bejutásnál nem a nyers pontszámok döntenek - így fair a lehetőség azoknak is, akik heti 1x jártak, azokkal szemben akik heti több versenyre elmentek."
+            }
+        ]
+    },
     "general": {
         "title": "Általános Részvételi Szabályzat",
         "description": "A Magyar Nemzeti Amatőr Ligában (OAC) való részvétel alapvető feltételei.",
@@ -36,13 +106,25 @@
         ]
     },
     "application": {
-        "title": "Jelentkezés Menete",
-        "description": "Lépésről lépésre útmutató a klubok csatlakozásához.",
-        "steps": [
-            "Regisztráld klubodat a tDarts platformon.",
-            "Töltsd ki az OAC jelentkezési űrlapot az 'Adminisztráció' menüpontban.",
-            "Várd meg a jóváhagyást (általában 24-48 óra).",
-            "Kezdd el szervezni a versenyeket!"
+        "title": "Jelentkezés és Liga Menedzselés",
+        "description": "Útmutató a csatlakozáshoz és a tDarts platform használatához.",
+        "items": [
+            {
+                "title": "1. Jelentkezés és Regisztráció",
+                "content": "Lépj be a tDarts fiókodba! Ha már van regisztrált klubod, válaszd ki a jelentkezéshez. Ha nincs, regisztrálj egy újat a felületen."
+            },
+            {
+                "title": "2. Jóváhagyás",
+                "content": "Jelentkezésed állapotáról emailben értesítünk. A jóváhagyás után a tDarts felületen a klubodnál automatikusan megjelenik az OAC liga."
+            },
+            {
+                "title": "3. OAC Verseny Indítása",
+                "content": "Ha elfogadták a jelentkezést, verseny létrehozásakor megjelenik az 'OAC verseny' opció. Válaszd ezt a hivatalos ligaversenyekhez."
+            },
+            {
+                "title": "4. Automatikus Szinkronizáció",
+                "content": "Az így létrehozott versenyek automatikusan a ligához párosulnak. A verseny végén az eredmények egyből frissítik a ligatabellát és a statisztikákat."
+            }
         ]
     }
 }

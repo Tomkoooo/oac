@@ -193,6 +193,25 @@ export default function Home() {
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             <div className="space-y-8">
+               {/* Important Rules */}
+               <div className="p-6 rounded-2xl bg-warning/10 border border-warning/20 mb-8">
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-warning">
+                    <FileText className="h-5 w-5" />
+                    {rulesData.important.title}
+                  </h3>
+                  <div className="space-y-4">
+                    {rulesData.important.items.map((item, idx) => (
+                      <div key={idx} className="flex gap-3">
+                        <div className="h-1.5 w-1.5 rounded-full bg-warning mt-2 shrink-0" />
+                        <div>
+                           <span className="font-semibold text-foreground/90 block mb-1">{item.title}</span>
+                           <span className="text-sm text-muted-foreground">{item.content}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+               </div>
+
                <div>
                   <h2 className="text-4xl font-bold mb-4">{rulesData.general.title}</h2>
                   <p className="text-xl text-muted-foreground">{rulesData.general.description}</p>
@@ -240,10 +259,13 @@ export default function Home() {
                   </p>
                   
                   <div className="space-y-6">
-                    {rulesData.application.steps.map((step, idx) => (
-                      <div key={idx} className="flex items-center gap-4">
-                        <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
-                        <p className="font-medium">{step}</p>
+                    {rulesData.application.items.map((item, idx) => (
+                      <div key={idx} className="flex gap-4">
+                        <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
+                        <div>
+                          <p className="font-bold text-lg">{item.title}</p>
+                          <p className="text-muted-foreground">{item.content}</p>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -263,7 +285,7 @@ export default function Home() {
       </section>
 
       {/* Application Section */}
-      <section className="section bg-gradient-to-b from-primary/10 to-transparent">
+      <section id="apply"  className="section bg-gradient-to-b from-primary/10 to-transparent">
         <div className="container">
           <div className="mx-auto max-w-4xl text-center space-y-8 glass-card p-12 md:p-20 border-primary/30 shadow-[0_0_50px_-12px_rgba(var(--color-primary),0.3)]">
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight">

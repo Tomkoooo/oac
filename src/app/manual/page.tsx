@@ -6,7 +6,7 @@ import { useState } from "react";
 import rulesData from "@/data/rules.json";
 
 export default function ManualPage() {
-  const [openSections, setOpenSections] = useState<string[]>(['general', 'points']);
+  const [openSections, setOpenSections] = useState<string[]>(['important', 'general', 'points', 'competition', 'league']);
 
   const toggleSection = (section: string) => {
     setOpenSections(prev => 
@@ -45,6 +45,109 @@ export default function ManualPage() {
       {/* Content */}
       <section className="section">
         <div className="container max-w-4xl">
+          
+          {/* Important Info */}
+          <div className="glass-card overflow-hidden mb-6 border-l-4 border-l-warning">
+            <button 
+              onClick={() => toggleSection('important')}
+              className="w-full flex items-center justify-between p-6 text-left hover:bg-primary/5 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-warning/20 rounded-xl">
+                  <FileText className="h-6 w-6 text-warning" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">{rulesData.important.title}</h2>
+                  <p className="text-muted-foreground">{rulesData.important.description}</p>
+                </div>
+              </div>
+              {openSections.includes('important') ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
+            </button>
+            
+            {openSections.includes('important') && (
+              <div className="p-6 pt-0 space-y-6">
+                {rulesData.important.items.map((item, idx) => (
+                  <div key={idx} className="flex gap-4">
+                    <div className="h-2 w-2 rounded-full bg-warning mt-2 shrink-0" />
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">{item.title}</h3>
+                      <p className="text-muted-foreground">{item.content}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Competition Rules */}
+          <div className="glass-card overflow-hidden mb-6">
+            <button 
+              onClick={() => toggleSection('competition')}
+              className="w-full flex items-center justify-between p-6 text-left hover:bg-primary/5 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-primary/20 rounded-xl">
+                  <Trophy className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">{rulesData.competition.title}</h2>
+                  <p className="text-muted-foreground">{rulesData.competition.description}</p>
+                </div>
+              </div>
+              {openSections.includes('competition') ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
+            </button>
+            
+            {openSections.includes('competition') && (
+              <div className="p-6 pt-0 space-y-6">
+                {rulesData.competition.items.map((item, idx) => (
+                  <div key={idx} className="flex gap-4">
+                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-primary font-bold">
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">{item.title}</h3>
+                      <p className="text-muted-foreground">{item.content}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* League Rules */}
+          <div className="glass-card overflow-hidden mb-6">
+            <button 
+              onClick={() => toggleSection('league')}
+              className="w-full flex items-center justify-between p-6 text-left hover:bg-primary/5 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-primary/20 rounded-xl">
+                  <Users className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">{rulesData.league.title}</h2>
+                  <p className="text-muted-foreground">{rulesData.league.description}</p>
+                </div>
+              </div>
+              {openSections.includes('league') ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
+            </button>
+            
+            {openSections.includes('league') && (
+              <div className="p-6 pt-0 space-y-6">
+                {rulesData.league.items.map((item, idx) => (
+                  <div key={idx} className="flex gap-4">
+                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-primary font-bold">
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">{item.title}</h3>
+                      <p className="text-muted-foreground">{item.content}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           
           {/* General Rules */}
           <div className="glass-card overflow-hidden mb-6">
@@ -116,10 +219,10 @@ export default function ManualPage() {
             )}
           </div>
 
-          {/* How It Works */}
+          {/* Application Guide */}
           <div className="glass-card overflow-hidden mb-6">
             <button 
-              onClick={() => toggleSection('howto')}
+              onClick={() => toggleSection('application')}
               className="w-full flex items-center justify-between p-6 text-left hover:bg-primary/5 transition-colors"
             >
               <div className="flex items-center gap-3">
@@ -127,43 +230,24 @@ export default function ManualPage() {
                   <Users className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">Hogyan Működik?</h2>
-                  <p className="text-muted-foreground">Lépésről lépésre</p>
+                  <h2 className="text-2xl font-bold">{rulesData.application.title}</h2>
+                  <p className="text-muted-foreground">{rulesData.application.description}</p>
                 </div>
               </div>
-              {openSections.includes('howto') ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
+              {openSections.includes('application') ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
             </button>
             
-            {openSections.includes('howto') && (
+            {openSections.includes('application') && (
               <div className="p-6 pt-0 space-y-4">
-                <div className="flex gap-4">
-                  <div className="h-10 w-10 rounded-full bg-success/20 flex items-center justify-center shrink-0 text-success font-bold">1</div>
-                  <div>
-                    <h3 className="font-bold mb-1">Klub Jelentkezés</h3>
-                    <p className="text-muted-foreground">A klubod tulajdonosa jelentkezik az OAC programba a tDarts platformon keresztül.</p>
+                {rulesData.application.items.map((item, idx) => (
+                  <div key={idx} className="flex gap-4">
+                    <div className="h-10 w-10 rounded-full bg-success/20 flex items-center justify-center shrink-0 text-success font-bold">{idx + 1}</div>
+                    <div>
+                      <h3 className="font-bold mb-1">{item.title}</h3>
+                      <p className="text-muted-foreground">{item.content}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="h-10 w-10 rounded-full bg-success/20 flex items-center justify-center shrink-0 text-success font-bold">2</div>
-                  <div>
-                    <h3 className="font-bold mb-1">Jóváhagyás</h3>
-                    <p className="text-muted-foreground">Az OAC adminisztrátorok jóváhagyják a jelentkezést, és létrejön a nemzeti liga.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="h-10 w-10 rounded-full bg-success/20 flex items-center justify-center shrink-0 text-success font-bold">3</div>
-                  <div>
-                    <h3 className="font-bold mb-1">Versenyek</h3>
-                    <p className="text-muted-foreground">A klub versenyeket szervez, amelyek automatikusan csatolódnak a ligához.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="h-10 w-10 rounded-full bg-success/20 flex items-center justify-center shrink-0 text-success font-bold">4</div>
-                  <div>
-                    <h3 className="font-bold mb-1">Pontgyűjtés</h3>
-                    <p className="text-muted-foreground">A versenyeken elért helyezések alapján pontokat gyűjtesz a ranglistán.</p>
-                  </div>
-                </div>
+                ))}
               </div>
             )}
           </div>
