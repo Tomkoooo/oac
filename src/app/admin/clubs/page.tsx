@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Loader2, Building2, CheckCircle, XCircle } from "lucide-react";
+import { toast } from "react-hot-toast";
 import TelemetryChart from "@/components/TelemetryChart";
-import axios from "axios";
+
 
 interface Club {
   _id: string;
@@ -38,25 +39,23 @@ export default function AdminClubsPage() {
 
   const fetchClubs = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_TDARTS_API_URL}/api/admin/clubs`, {
-        headers: {
-          'x-internal-secret': process.env.NEXT_PUBLIC_TDARTS_INTERNAL_SECRET || process.env.TDARTS_INTERNAL_SECRET
-        }
-      });
-      // OAC Portal only shows VERIFIED clubs
-      const verifiedClubs = response.data.clubs.filter((club: Club) => club.verified === true);
-      setClubs(verifiedClubs);
-      setStats({
-        total: verifiedClubs.length,
-        verified: verifiedClubs.length,
-        unverified: 0
-      });
+      const response = await fetch('/api/admin/clubs');
+      
+      if (response.ok) {
+        const data = await response.json();
+        setClubs(data.clubs || []);
+        setStats(data.stats || { total: 0, verified: 0, unverified: 0 });
+      } else {
+        throw new Error('Failed to fetch clubs');
+      }
     } catch (error) {
       console.error('Error fetching clubs:', error);
+      toast.error("Nem sikerült betölteni a klubokat");
     } finally {
       setLoading(false);
     }
   };
+
 
   // OAC Portal shows only verified clubs
   const filteredClubs = clubs;

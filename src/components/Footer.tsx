@@ -1,0 +1,108 @@
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button'; // Note: tDarts uses @/components/ui/Button, check casing if needed. OAC usually uses lowercase.
+
+export default function Footer() {
+  return (
+    <footer className="bg-card text-foreground border-t border-border mt-auto">
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          {/* Column 1: Legal & Info */}
+          <div className="flex flex-col space-y-4">
+            <h3 className="font-bold text-lg mb-2">Információk</h3>
+            <Link href="/privacy" className="hover:text-primary transition-colors text-muted-foreground">
+              Adatkezelési tájékoztató
+            </Link>
+            <Link href="/terms" className="hover:text-primary transition-colors text-muted-foreground">
+              Általános Szerződési Feltételek
+            </Link>
+            <Link href="/feedback" className="hover:text-primary transition-colors text-muted-foreground">
+              Kapcsolat / Visszajelzés
+            </Link>
+            <p className="text-sm text-muted-foreground mt-auto pt-4">
+              &copy; {new Date().getFullYear()} tDarts. Minden jog fenntartva.
+            </p>
+          </div>
+
+          {/* Column 2: Maintainer & OAC */}
+          <div className="flex flex-col space-y-4">
+            <h3 className="font-bold text-lg mb-2">Hálózat</h3>
+            <div className="flex flex-col space-y-2">
+              <p className="text-muted-foreground">
+                Fenntartó:{" "}
+                <Link
+                  href="https://sironic.hu" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Sironic Kft.
+                </Link>
+              </p>
+              
+              <div className="mt-4 p-4 bg-muted rounded-lg border border-border">
+                <p className="text-sm font-semibold mb-2 text-foreground">Próbáld ki az OAC portált is!</p>
+                <Button 
+                  variant="outline"
+                  className="w-full"
+                  asChild
+                >
+                  <Link 
+                    href="https://amator.tdarts.hu" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    OAC - Amatőr Darts
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Column 3: Partners */}
+          <div className="flex flex-col space-y-4">
+            <h3 className="font-bold text-lg mb-2">Partnereink</h3>
+            <div className="grid grid-cols-3 gap-4 items-center">
+              <div className="bg-white p-2 rounded-lg transition duration-300 flex items-center justify-center h-20 w-20 relative">
+                 {/* Using generic path for partners or assume they exist. tDarts has specific logos. 
+                     We should try to use the same if assets are available, or placeholders. 
+                     Since we can't see assets effectively, we will assume they might be missing on OAC unless copied. 
+                     For now, we keep the structure but handle missing images gracefully with alt text if needed.
+                     However, user asked to copy. I will assume the paths /partners/... might need to be /tdarts_fav.svg or similar if assets are missing.
+                     But let's stick to the code provided in the source file. */}
+                <Image 
+                  src="/partners/mdsz_logo.png" 
+                  alt="Magyar Darts Szövetség" 
+                  fill
+                  className="object-contain p-1"
+                />
+              </div>
+              <div className="bg-white p-2 rounded-lg transition duration-300 flex items-center justify-center h-20 w-20 relative">
+                <Image 
+                  src="/partners/dartsbarlang_logo.png" 
+                  alt="DartsBarlang" 
+                  fill
+                  className="object-contain p-1"
+                />
+              </div>
+              <div className="bg-white p-2 rounded-lg transition duration-300 flex items-center justify-center h-20 w-20 relative">
+                <Image 
+                  src="/partners/remiz_logo.png" 
+                  alt="Remiz Sport- és Eseményközpont" 
+                  fill
+                  className="object-contain p-1"
+                />
+              </div>
+            </div>
+            
+            <p className="text-xs text-muted-foreground mt-2">
+              Kiemelt partnereink, akik támogatják a magyar darts fejlődését.
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

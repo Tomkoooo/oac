@@ -4,6 +4,9 @@ import Link from "next/link";
 import { ArrowLeft, Trophy, Users, Award, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import rulesData from "@/data/rules.json";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function ManualPage() {
   const [openSections, setOpenSections] = useState<string[]>(['important', 'general', 'points', 'competition', 'league']);
@@ -17,24 +20,23 @@ export default function ManualPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <section className="section hero-gradient relative overflow-hidden py-16">
-        <div className="absolute inset-0 pointer-events-none opacity-20">
-          <div className="absolute top-10 left-10 w-64 h-64 rounded-full blur-3xl bg-primary/30" />
+      <section className="relative overflow-hidden py-16 border-b border-border/50 bg-muted/20">
+         <div className="absolute inset-0 pointer-events-none opacity-10">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
         </div>
-        
-        <div className="container relative z-10">
-          <Link 
-            href="/"
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Vissza a főoldalra
-          </Link>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <Button variant="ghost" className="mb-8 pl-0 hover:pl-2 transition-all gap-2 text-muted-foreground" asChild>
+             <Link href="/">
+                <ArrowLeft className="h-4 w-4" />
+                Vissza a főoldalra
+             </Link>
+          </Button>
           
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-4">
-            <span className="text-gradient-red">OAC</span> Útmutató
+            <span className="text-primary">OAC</span> Útmutató
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl">
             Szabályzat, pontrendszer és hasznos információk az OAC Magyar Nemzeti Amatőr Darts Liga működéséről.
@@ -43,250 +45,252 @@ export default function ManualPage() {
       </section>
 
       {/* Content */}
-      <section className="section">
-        <div className="container max-w-4xl">
+      <section className="py-12">
+        <div className="container mx-auto px-4 max-w-4xl space-y-6">
           
           {/* Important Info */}
-          <div className="glass-card overflow-hidden mb-6 border-l-4 border-l-warning">
-            <button 
+          <Card className="border-l-4 border-l-warning shadow-md">
+            <div 
               onClick={() => toggleSection('important')}
-              className="w-full flex items-center justify-between p-6 text-left hover:bg-primary/5 transition-colors"
+              className="flex items-center justify-between p-6 cursor-pointer hover:bg-muted/50 transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-warning/20 rounded-xl">
-                  <FileText className="h-6 w-6 text-warning" />
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-warning/10 rounded-xl text-warning">
+                  <FileText className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">{rulesData.important.title}</h2>
-                  <p className="text-muted-foreground">{rulesData.important.description}</p>
+                  <h2 className="text-xl font-bold">{rulesData.important.title}</h2>
+                  <p className="text-muted-foreground text-sm">{rulesData.important.description}</p>
                 </div>
               </div>
-              {openSections.includes('important') ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
-            </button>
+              {openSections.includes('important') ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+            </div>
             
             {openSections.includes('important') && (
-              <div className="p-6 pt-0 space-y-6">
+              <CardContent className="pt-0 space-y-4">
                 {rulesData.important.items.map((item, idx) => (
-                  <div key={idx} className="flex gap-4">
+                  <div key={idx} className="flex gap-3 pl-16">
                     <div className="h-2 w-2 rounded-full bg-warning mt-2 shrink-0" />
                     <div>
-                      <h3 className="font-bold text-lg mb-1">{item.title}</h3>
-                      <p className="text-muted-foreground">{item.content}</p>
+                      <h3 className="font-semibold">{item.title}</h3>
+                      <p className="text-muted-foreground text-sm">{item.content}</p>
                     </div>
                   </div>
                 ))}
-              </div>
+              </CardContent>
             )}
-          </div>
+          </Card>
 
           {/* Competition Rules */}
-          <div className="glass-card overflow-hidden mb-6">
-            <button 
+          <Card>
+            <div 
               onClick={() => toggleSection('competition')}
-              className="w-full flex items-center justify-between p-6 text-left hover:bg-primary/5 transition-colors"
+              className="flex items-center justify-between p-6 cursor-pointer hover:bg-muted/50 transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary/20 rounded-xl">
-                  <Trophy className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-xl text-primary">
+                  <Trophy className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">{rulesData.competition.title}</h2>
-                  <p className="text-muted-foreground">{rulesData.competition.description}</p>
+                  <h2 className="text-xl font-bold">{rulesData.competition.title}</h2>
+                  <p className="text-muted-foreground text-sm">{rulesData.competition.description}</p>
                 </div>
               </div>
-              {openSections.includes('competition') ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
-            </button>
+              {openSections.includes('competition') ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+            </div>
             
             {openSections.includes('competition') && (
-              <div className="p-6 pt-0 space-y-6">
+              <CardContent className="pt-0 space-y-6">
                 {rulesData.competition.items.map((item, idx) => (
                   <div key={idx} className="flex gap-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-primary font-bold">
-                      {idx + 1}
-                    </div>
+                    <Badge variant="outline" className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 border-primary/20 text-primary bg-primary/5">
+                        {idx + 1}
+                    </Badge>
                     <div>
-                      <h3 className="font-bold text-lg mb-1">{item.title}</h3>
-                      <p className="text-muted-foreground">{item.content}</p>
+                      <h3 className="font-semibold mb-1">{item.title}</h3>
+                      <p className="text-muted-foreground text-sm">{item.content}</p>
                     </div>
                   </div>
                 ))}
-              </div>
+              </CardContent>
             )}
-          </div>
+          </Card>
 
           {/* League Rules */}
-          <div className="glass-card overflow-hidden mb-6">
-            <button 
+          <Card>
+            <div 
               onClick={() => toggleSection('league')}
-              className="w-full flex items-center justify-between p-6 text-left hover:bg-primary/5 transition-colors"
+              className="flex items-center justify-between p-6 cursor-pointer hover:bg-muted/50 transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary/20 rounded-xl">
-                  <Users className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-xl text-primary">
+                  <Users className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">{rulesData.league.title}</h2>
-                  <p className="text-muted-foreground">{rulesData.league.description}</p>
+                  <h2 className="text-xl font-bold">{rulesData.league.title}</h2>
+                  <p className="text-muted-foreground text-sm">{rulesData.league.description}</p>
                 </div>
               </div>
-              {openSections.includes('league') ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
-            </button>
+              {openSections.includes('league') ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+            </div>
             
             {openSections.includes('league') && (
-              <div className="p-6 pt-0 space-y-6">
+              <CardContent className="pt-0 space-y-6">
                 {rulesData.league.items.map((item, idx) => (
                   <div key={idx} className="flex gap-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-primary font-bold">
-                      {idx + 1}
-                    </div>
+                     <Badge variant="outline" className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 border-primary/20 text-primary bg-primary/5">
+                        {idx + 1}
+                    </Badge>
                     <div>
-                      <h3 className="font-bold text-lg mb-1">{item.title}</h3>
-                      <p className="text-muted-foreground">{item.content}</p>
+                      <h3 className="font-semibold mb-1">{item.title}</h3>
+                      <p className="text-muted-foreground text-sm">{item.content}</p>
                     </div>
                   </div>
                 ))}
-              </div>
+              </CardContent>
             )}
-          </div>
+          </Card>
           
           {/* General Rules */}
-          <div className="glass-card overflow-hidden mb-6">
-            <button 
+          <Card>
+            <div 
               onClick={() => toggleSection('general')}
-              className="w-full flex items-center justify-between p-6 text-left hover:bg-primary/5 transition-colors"
+              className="flex items-center justify-between p-6 cursor-pointer hover:bg-muted/50 transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary/20 rounded-xl">
-                  <FileText className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-xl text-primary">
+                  <FileText className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">{rulesData.general.title}</h2>
-                  <p className="text-muted-foreground">{rulesData.general.description}</p>
+                  <h2 className="text-xl font-bold">{rulesData.general.title}</h2>
+                  <p className="text-muted-foreground text-sm">{rulesData.general.description}</p>
                 </div>
               </div>
-              {openSections.includes('general') ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
-            </button>
+              {openSections.includes('general') ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+            </div>
             
             {openSections.includes('general') && (
-              <div className="p-6 pt-0 space-y-6">
+              <CardContent className="pt-0 space-y-6">
                 {rulesData.general.items.map((item, idx) => (
                   <div key={idx} className="flex gap-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-primary font-bold">
-                      {idx + 1}
-                    </div>
+                     <Badge variant="outline" className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 border-primary/20 text-primary bg-primary/5">
+                        {idx + 1}
+                    </Badge>
                     <div>
-                      <h3 className="font-bold text-lg mb-1">{item.title}</h3>
-                      <p className="text-muted-foreground">{item.content}</p>
+                      <h3 className="font-semibold mb-1">{item.title}</h3>
+                      <p className="text-muted-foreground text-sm">{item.content}</p>
                     </div>
                   </div>
                 ))}
-              </div>
+              </CardContent>
             )}
-          </div>
+          </Card>
 
           {/* Points System */}
-          <div className="glass-card overflow-hidden mb-6">
-            <button 
+          <Card>
+            <div 
               onClick={() => toggleSection('points')}
-              className="w-full flex items-center justify-between p-6 text-left hover:bg-primary/5 transition-colors"
+              className="flex items-center justify-between p-6 cursor-pointer hover:bg-muted/50 transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary/20 rounded-xl">
-                  <Award className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-xl text-primary">
+                  <Award className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">{rulesData.points.title}</h2>
-                  <p className="text-muted-foreground">Hogyan gyűjthetsz pontokat a ligában</p>
+                  <h2 className="text-xl font-bold">{rulesData.points.title}</h2>
+                  <p className="text-muted-foreground text-sm">Hogyan gyűjthetsz pontokat a ligában</p>
                 </div>
               </div>
-              {openSections.includes('points') ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
-            </button>
+              {openSections.includes('points') ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+            </div>
             
             {openSections.includes('points') && (
-              <div className="p-6 pt-0 space-y-4">
+              <CardContent className="pt-0 space-y-4">
                 {rulesData.points.items.map((item, idx) => (
                   <div key={idx} className="flex gap-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-primary font-bold">
-                      {idx + 1}
-                    </div>
+                     <Badge variant="outline" className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 border-primary/20 text-primary bg-primary/5">
+                        {idx + 1}
+                    </Badge>
                     <div>
-                      <h3 className="font-bold text-lg mb-1">{item.title}</h3>
-                      <p className="text-muted-foreground">{item.content}</p>
+                      <h3 className="font-semibold mb-1">{item.title}</h3>
+                      <p className="text-muted-foreground text-sm">{item.content}</p>
                     </div>
                   </div>
                 ))}
-              </div>
+              </CardContent>
             )}
-          </div>
+          </Card>
 
           {/* Application Guide */}
-          <div className="glass-card overflow-hidden mb-6">
-            <button 
+          <Card>
+            <div 
               onClick={() => toggleSection('application')}
-              className="w-full flex items-center justify-between p-6 text-left hover:bg-primary/5 transition-colors"
+              className="flex items-center justify-between p-6 cursor-pointer hover:bg-muted/50 transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary/20 rounded-xl">
-                  <Users className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-xl text-primary">
+                  <Users className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">{rulesData.application.title}</h2>
-                  <p className="text-muted-foreground">{rulesData.application.description}</p>
+                  <h2 className="text-xl font-bold">{rulesData.application.title}</h2>
+                  <p className="text-muted-foreground text-sm">{rulesData.application.description}</p>
                 </div>
               </div>
-              {openSections.includes('application') ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
-            </button>
+              {openSections.includes('application') ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+            </div>
             
             {openSections.includes('application') && (
-              <div className="p-6 pt-0 space-y-4">
+              <CardContent className="pt-0 space-y-4">
                 {rulesData.application.items.map((item, idx) => (
                   <div key={idx} className="flex gap-4">
-                    <div className="h-10 w-10 rounded-full bg-success/20 flex items-center justify-center shrink-0 text-success font-bold">{idx + 1}</div>
+                    <Badge variant="outline" className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 border-success/20 text-success bg-success/5">
+                        {idx + 1}
+                    </Badge>
                     <div>
-                      <h3 className="font-bold mb-1">{item.title}</h3>
-                      <p className="text-muted-foreground">{item.content}</p>
+                      <h3 className="font-semibold mb-1">{item.title}</h3>
+                      <p className="text-muted-foreground text-sm">{item.content}</p>
                     </div>
                   </div>
                 ))}
-              </div>
+              </CardContent>
             )}
-          </div>
+          </Card>
 
           {/* FAQ */}
-          <div className="glass-card overflow-hidden">
-            <button 
+          <Card>
+            <div 
               onClick={() => toggleSection('faq')}
-              className="w-full flex items-center justify-between p-6 text-left hover:bg-primary/5 transition-colors"
+              className="flex items-center justify-between p-6 cursor-pointer hover:bg-muted/50 transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary/20 rounded-xl">
-                  <Trophy className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-xl text-primary">
+                  <Trophy className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">Gyakran Ismételt Kérdések</h2>
-                  <p className="text-muted-foreground">GYIK</p>
+                  <h2 className="text-xl font-bold">Gyakran Ismételt Kérdések</h2>
+                  <p className="text-muted-foreground text-sm">GYIK</p>
                 </div>
               </div>
-              {openSections.includes('faq') ? <ChevronUp className="h-6 w-6" /> : <ChevronDown className="h-6 w-6" />}
-            </button>
+              {openSections.includes('faq') ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+            </div>
             
             {openSections.includes('faq') && (
-              <div className="p-6 pt-0 space-y-6">
+              <CardContent className="pt-0 space-y-6">
                 <div>
-                  <h3 className="font-bold mb-2">Ki vehet részt az OAC-ban?</h3>
-                  <p className="text-muted-foreground">Bármely tDarts platformon regisztrált klub csatlakozhat, amennyiben az OAC adminisztrátorok jóváhagyják a jelentkezését.</p>
+                  <h3 className="font-semibold mb-2">Ki vehet részt az OAC-ban?</h3>
+                  <p className="text-muted-foreground text-sm">Bármely tDarts platformon regisztrált klub csatlakozhat, amennyiben az OAC adminisztrátorok jóváhagyják a jelentkezését.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold mb-2">Hogyan számítják a pontokat?</h3>
-                  <p className="text-muted-foreground">A versenyeken elért helyezések alapján automatikusan. Minden verseny után a pontok azonnal frissülnek a ranglistán.</p>
+                  <h3 className="font-semibold mb-2">Hogyan számítják a pontokat?</h3>
+                  <p className="text-muted-foreground text-sm">A versenyeken elért helyezések alapján automatikusan. Minden verseny után a pontok azonnal frissülnek a ranglistán.</p>
                 </div>
                 <div>
-                  <h3 className="font-bold mb-2">Mi történik, ha kilépek egy klubból?</h3>
-                  <p className="text-muted-foreground">A korábban szerzett pontjaid megmaradnak, de új pontokat csak aktív klubtagságod idején gyűjthetsz.</p>
+                  <h3 className="font-semibold mb-2">Mi történik, ha kilépek egy klubból?</h3>
+                  <p className="text-muted-foreground text-sm">A korábban szerzett pontjaid megmaradnak, de új pontokat csak aktív klubtagságod idején gyűjthetsz.</p>
                 </div>
-              </div>
+              </CardContent>
             )}
-          </div>
+          </Card>
           
         </div>
       </section>

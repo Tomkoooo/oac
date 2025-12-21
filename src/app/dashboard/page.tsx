@@ -2,9 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, CheckCircle2, Clock, AlertCircle, Trophy, Loader2, ArrowLeft, ExternalLink, Plus, Users } from "lucide-react";
+import { Building2, CheckCircle2, Clock, AlertCircle, Trophy, Loader2, ArrowLeft, ExternalLink, Plus, Users, LayoutDashboard } from "lucide-react";
 import CreateClubModal from "@/components/CreateClubModal";
 import { toast } from "react-hot-toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 interface Club {
   _id: string;
@@ -120,25 +124,15 @@ export default function DashboardPage() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "approved":
-        return <CheckCircle2 className="h-5 w-5 text-success" />;
-      case "rejected":
-        return <AlertCircle className="h-5 w-5 text-error" />;
-      default:
-        return <Clock className="h-5 w-5 text-warning" />;
-    }
-  };
-
   const getStatusBadge = (status: string) => {
-    const styles = {
-      approved: "bg-success/20 text-success border-success/50",
-      rejected: "bg-error/20 text-error border-error/50",
-      pending: "bg-warning/20 text-warning border-warning/50",
-      submitted: "bg-warning/20 text-warning border-warning/50",
-      removal_requested: "bg-orange-500/20 text-orange-500 border-orange-500/50"
+    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+      approved: "default", // will override color below
+      rejected: "destructive",
+      pending: "outline",
+      submitted: "outline",
+      removal_requested: "secondary",
     };
+    
     const labels = {
       approved: "Elfogadva",
       rejected: "Elutasítva",
@@ -146,22 +140,39 @@ export default function DashboardPage() {
       submitted: "Függőben",
       removal_requested: "Eltávolítás kérve"
     };
+
+    const icons = {
+        approved: <CheckCircle2 className="h-3 w-3 mr-1" />,
+        rejected: <AlertCircle className="h-3 w-3 mr-1" />,
+        pending: <Clock className="h-3 w-3 mr-1" />,
+        submitted: <Clock className="h-3 w-3 mr-1" />,
+        removal_requested: <AlertCircle className="h-3 w-3 mr-1" />,
+    }
+
+    const classNameMap: Record<string, string> = {
+        approved: "bg-success hover:bg-success/80 text-white border-transparent",
+        rejected: "bg-destructive hover:bg-destructive/80 text-white border-transparent",
+        pending: "text-warning border-warning hover:bg-warning/10",
+        submitted: "text-warning border-warning hover:bg-warning/10",
+        removal_requested: "bg-orange-500 hover:bg-orange-600 text-white border-transparent",
+    }
     
-    const statusKey = status as keyof typeof styles;
+    // cast status to valid keys
+    const s = status as keyof typeof labels;
     
     return (
-      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${styles[statusKey] || styles.pending}`}>
-        {getStatusIcon(status)}
-        {labels[statusKey] || status}
-      </span>
+      <Badge variant="outline" className={`font-medium ${classNameMap[s] || ""}`}>
+        {icons[s]}
+        {labels[s] || status}
+      </Badge>
     );
   };
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="glass-card p-8 text-center space-y-4">
-          <Loader2 className="h-12 w-12 text-primary animate-spin mx-auto" />
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 text-primary animate-spin mx-auto" />
           <p className="text-muted-foreground">Adatok betöltése...</p>
         </div>
       </div>
@@ -170,57 +181,56 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
-        <div className="glass-card max-w-md p-8 text-center space-y-4">
-          <AlertCircle className="h-12 w-12 text-error mx-auto" />
-          <h2 className="text-2xl font-bold">Hiba</h2>
-          <p className="text-muted-foreground">{error}</p>
-          <button
-            onClick={() => router.push("/login")}
-            className="glass-button inline-flex items-center justify-center gap-2"
-          >
-            <ArrowLeft className="h-5 w-5" />
-            Vissza a bejelentkezéshez
-          </button>
-        </div>
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-background">
+        <Card className="max-w-md w-full border-destructive/20 shadow-lg">
+            <CardHeader className="text-center">
+                <AlertCircle className="h-10 w-10 text-destructive mx-auto mb-2" />
+                <CardTitle>Hiba történt</CardTitle>
+                <CardDescription>{error}</CardDescription>
+            </CardHeader>
+            <CardFooter className="justify-center">
+                 <Button onClick={() => router.push("/login")} variant="outline" className="gap-2">
+                    <ArrowLeft className="h-4 w-4" />
+                    Vissza a bejelentkezéshez
+                 </Button>
+            </CardFooter>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-[calc(100vh-4rem)] py-8 px-4 sm:px-6 lg:px-8 bg-background">
+      <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
         {/* Header */}
-        <div className="space-y-4 animate-fade-in-up">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 border-2 border-primary/50">
-              <Trophy className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Klub Kezelőfelület</h1>
-              <p className="text-muted-foreground">
-                Kezeld klubjaid és jelentkezz a Nemzeti Ligába
-              </p>
-            </div>
-          </div>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+           <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <LayoutDashboard className="h-6 w-6" />
+                </div>
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Klub Kezelőfelület</h1>
+                    <p className="text-muted-foreground">Kezeld klubjaid és jelentkezz a Nemzeti Ligába</p>
+                </div>
+           </div>
+           
+           <Button variant="outline" asChild className="gap-2">
+                <a href="https://tdarts.sironic.hu" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4" />
+                    tDarts Platform
+                </a>
+           </Button>
         </div>
 
+        <Separator />
+
         {/* My Clubs Section */}
-        <div className="space-y-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold flex items-center gap-2">
-              <Building2 className="h-6 w-6 text-primary" />
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-primary" />
               Klubjaim
             </h2>
-            <a
-              href="https://tdarts.sironic.hu"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              tDarts Platform
-              <ExternalLink className="h-4 w-4" />
-            </a>
           </div>
 
           {clubs.length > 0 ? (
@@ -230,148 +240,144 @@ export default function DashboardPage() {
                 const application = applications.find((app) => app.clubId === club._id);
                 
                 return (
-                  <div key={club._id} className="depth-card group">
-                    <div className="space-y-4">
-                      {/* Club Header */}
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                            <Building2 className="h-6 w-6 text-primary" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-lg">{club.name}</h3>
-                            <p className="text-sm text-muted-foreground capitalize">
-                              Szerepkör: {club.role}
-                            </p>
-                          </div>
+                  <Card key={club._id} className="group hover:border-primary/30 transition-colors duration-300">
+                    <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start">
+                             <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                    <Building2 className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-base">{club.name}</CardTitle>
+                                    <CardDescription className="capitalize text-xs">
+                                        Szerepkör: {club.role}
+                                    </CardDescription>
+                                </div>
+                             </div>
+                             {club.verified && (
+                                <Badge variant="secondary" className="bg-success/10 text-success hover:bg-success/20 border-transparent">
+                                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                                    Ellenőrzött
+                                </Badge>
+                             )}
                         </div>
-                      </div>
-
-                      {/* Verification Status */}
-                      {club.verified && (
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-success/10 border border-success/30">
-                          <CheckCircle2 className="h-4 w-4 text-success" />
-                          <span className="text-sm text-success">Ellenőrzött klub</span>
-                        </div>
-                      )}
-
-                      {/* Application Status or Apply Button */}
-                      <div className="pt-4 border-t border-border/50">
+                    </CardHeader>
+                    <CardContent>
+                       <div className="text-sm">
+                           {hasApplication ? (
+                               <div className="space-y-3 p-3 rounded-lg bg-muted/50 border border-border/50">
+                                   <div className="flex justify-between items-center">
+                                       <span className="text-muted-foreground">Státusz</span>
+                                       {getStatusBadge(application!.status)}
+                                   </div>
+                                    <div className="flex justify-between items-center text-xs text-muted-foreground">
+                                       <span>Beküldve</span>
+                                       <span>{new Date(application!.submittedAt).toLocaleDateString('hu-HU')}</span>
+                                    </div>
+                               </div>
+                           ) : (
+                               <div className="text-muted-foreground text-sm py-2">
+                                   Jelentkezz a kluboddal a Nemzeti Ligába, hogy hivatalos versenyeket szervezhess.
+                               </div>
+                           )}
+                       </div>
+                    </CardContent>
+                    <CardFooter className="pt-0">
                         {hasApplication ? (
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">Státusz:</span>
-                              {getStatusBadge(application!.status)}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              Beküldve: {new Date(application!.submittedAt).toLocaleDateString('hu-HU')}
-                            </p>
-                            {application!.status === 'approved' && (
-                              <button
-                                onClick={() => handleRequestRemoval(application!._id)}
-                                disabled={applyingFor === application!._id}
-                                className="w-full h-11 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-error text-error-foreground hover:bg-error/90 transition-colors disabled:opacity-50 text-sm font-semibold"
-                              >
-                                {applyingFor === application!._id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <AlertCircle className="h-4 w-4" />
-                                )}
-                                OAC eltávolításának kérése
-                              </button>
-                            )}
-                          </div>
+                             application!.status === 'approved' && (
+                                <Button 
+                                    variant="destructive" 
+                                    size="sm" 
+                                    className="w-full"
+                                    onClick={() => handleRequestRemoval(application!._id)}
+                                    disabled={applyingFor === application!._id}
+                                >
+                                     {applyingFor === application!._id ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <AlertCircle className="h-4 w-4 mr-2" />}
+                                     Eltávolítás kérése
+                                </Button>
+                             )
                         ) : (
-                          <button
-                            onClick={() => handleApply(club._id, club.name)}
-                            disabled={applyingFor === club._id || club.role !== 'admin'}
-                            className="w-full glass-button h-11 inline-flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={club.role !== 'admin' ? 'Csak klub adminisztrátorok jelentkezhetnek' : ''}
-                          >
-                            {applyingFor === club._id ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Jelentkezés...
-                              </>
-                            ) : (
-                              <>
-                                <Trophy className="h-4 w-4" />
-                                Jelentkezés a Nemzeti Ligába
-                              </>
-                            )}
-                          </button>
+                            <div className="flex flex-col items-center mx-auto gap-2">
+                              <Button
+                                  className="w-full"
+                                  size="sm"
+                                  onClick={() => handleApply(club._id, club.name)}
+                                  disabled={applyingFor === club._id || club.role !== 'admin'}
+                                  title={club.role !== 'admin' ? 'Csak klub adminisztrátorok jelentkezhetnek' : ''}
+                              >
+                                  {applyingFor === club._id ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trophy className="h-4 w-4 mr-2" />}
+                                  Jelentkezés
+                              </Button>
+                              <span className="text-xs text-muted-foreground">Csak klub adminisztrátorok jelentkezhetnek</span>
+                            </div>
                         )}
-                      </div>
-                    </div>
-                  </div>
+                    </CardFooter>
+                  </Card>
                 );
               })}
             </div>
           ) : (
-            <div className="glass-card p-12 text-center space-y-6">
-              <Building2 className="h-20 w-20 text-muted-foreground/50 mx-auto" />
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Még nincs klubod</h3>
-                <p className="text-muted-foreground max-w-md mx-auto mb-4">
-                  Hozz létre egy klubot a tDarts platformon, hogy jelentkezhess a Magyar Nemzeti Amatőr Ligába.
-                </p>
-                <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-                  💡 <strong>Tipp:</strong> Ha Google-lal jelentkeztél be, már van tDarts fiókod! 
-                  Most csak létre kell hoznod egy klubot és beállítanod magad adminisztrátornak.
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
-                  onClick={() => setShowCreateClub(true)}
-                  className="inline-flex items-center gap-2 glass-button"
-                >
-                  <Plus className="h-5 w-5" />
-                  Klub létrehozása
-                </button>
-                <a
-                  href="https://tdarts.sironic.hu"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 border-2 border-primary/50 hover:border-primary hover:bg-primary/10"
-                >
-                  <Users className="h-5 w-5" />
-                  tDarts Platform
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
+            <Card className="bg-muted/10 border-dashed">
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+                    <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
+                        <Building2 className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <div className="space-y-1">
+                        <h3 className="text-xl font-semibold">Még nincs klubod</h3>
+                        <p className="text-muted-foreground max-w-sm mx-auto">
+                            Hozz létre egy klubot a tDarts platformon, hogy jelentkezhess a Magyar Nemzeti Amatőr Ligába.
+                        </p>
+                    </div>
+                    <div className="flex flex-wrap gap-3 pt-4">
+                        <Button onClick={() => setShowCreateClub(true)} variant="default">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Klub létrehozása
+                        </Button>
+                        <Button variant="outline" asChild>
+                            <a href="https://tdarts.sironic.hu" target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                tDarts Platform
+                            </a>
+                        </Button>
+                    </div>
+                    <div className="text-xs text-muted-foreground bg-primary/5 p-3 rounded-md max-w-sm">
+                        💡 <strong>Tipp:</strong> Ha Google-lal jelentkeztél be, már van tDarts fiókod! 
+                        Most csak létre kell hoznod egy klubot és beállítanod magad adminisztrátornak.
+                    </div>
+                </CardContent>
+            </Card>
           )}
         </div>
 
-        {/* Applications Section */}
-        {applications.length > 0 && (
-          <div className="space-y-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <h2 className="text-2xl font-semibold flex items-center gap-2">
-              <CheckCircle2 className="h-6 w-6 text-primary" />
+         {/* Applications Section */}
+         {applications.length > 0 && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-primary" />
               Jelentkezéseim
             </h2>
             <div className="space-y-4">
               {applications.map((app) => (
-                <div key={app._id} className="glass-card p-6 hover:scale-[1.02] transition-transform">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                        <Building2 className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{app.clubName}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Beküldve: {new Date(app.submittedAt).toLocaleDateString('hu-HU', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                    {getStatusBadge(app.status)}
-                  </div>
-                </div>
+                <Card key={app._id}>
+                    <CardContent className="flex items-center justify-between p-6">
+                        <div className="flex items-center gap-4">
+                             <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                <Building2 className="h-6 w-6" />
+                             </div>
+                             <div>
+                                <h3 className="font-semibold">{app.clubName}</h3>
+                                <div className="text-sm text-muted-foreground">
+                                    Beküldve: {new Date(app.submittedAt).toLocaleDateString('hu-HU', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                </div>
+                             </div>
+                        </div>
+                        {getStatusBadge(app.status)}
+                    </CardContent>
+                </Card>
               ))}
             </div>
           </div>
@@ -379,25 +385,24 @@ export default function DashboardPage() {
 
         {/* Help Section for Google Users */}
         {clubs.length === 0 && applications.length === 0 && (
-          <div className="glass-card p-6 border-l-4 border-primary animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
-                <Trophy className="h-5 w-5 text-primary" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-semibold text-lg">Hogyan tovább?</h3>
-                <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-                  <li>Menj a <strong className="text-foreground">tDarts platformra</strong></li>
-                  <li>Hozz létre egy új klubot (Klubok → Új Klub)</li>
-                  <li>Állítsd be magad <strong className="text-foreground">klub adminisztrátornak</strong></li>
-                  <li>Térj vissza ide és jelentkezz a Nemzeti Ligába!</li>
-                </ol>
-                <p className="text-xs text-muted-foreground pt-2">
-                  ℹ️ A klub ellenőrzése után automatikusan részt vehetsz a nemzeti liga versenyekben.
-                </p>
-              </div>
-            </div>
-          </div>
+            <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="p-6">
+                    <div className="flex gap-4">
+                        <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                            <Trophy className="h-5 w-5 text-primary" />
+                        </div>
+                         <div className="space-y-2">
+                            <h3 className="font-semibold">Hogyan tovább?</h3>
+                            <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+                                <li>Menj a <strong className="text-foreground">tDarts platformra</strong></li>
+                                <li>Hozz létre egy új klubot (Klubok → Új Klub)</li>
+                                <li>Állítsd be magad <strong className="text-foreground">klub adminisztrátornak</strong></li>
+                                <li>Térj vissza ide és jelentkezz a Nemzeti Ligába!</li>
+                            </ol>
+                         </div>
+                    </div>
+                </CardContent>
+            </Card>
         )}
       </div>
 

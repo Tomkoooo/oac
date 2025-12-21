@@ -36,3 +36,11 @@ const ApplicationSchema = new Schema({
 }, { timestamps: true });
 
 export const Application = models.Application || model('Application', ApplicationSchema);
+
+// Config Model for dynamic settings/rules
+const ConfigSchema = new Schema({
+  key: { type: String, required: true, unique: true },
+  value: { type: Schema.Types.Mixed, required: true },
+}, { timestamps: true });
+
+export const Config = models.Config || model('Config', ConfigSchema);
