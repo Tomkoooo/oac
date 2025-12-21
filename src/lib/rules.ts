@@ -4,27 +4,27 @@ import fs from 'fs';
 import path from 'path';
 
 export async function getRules() {
+  // 1. Try to fetch from DB
   try {
     await dbConnect();
-    
-    // Try to fetch from DB
     const config = await Config.findOne({ key: 'oac_rules' });
-    
     if (config && config.value) {
       return config.value;
     }
+  } catch (error) {
+    console.error("Database error while fetching rules:", error);
+  }
 
-    // Fallback to local rules.json
+  // 2. Fallback to local rules.json
+  try {
     const rulesPath = path.join(process.cwd(), 'src', 'data', 'rules.json');
     if (fs.existsSync(rulesPath)) {
-        const fileContent = fs.readFileSync(rulesPath, 'utf-8');
-        return JSON.parse(fileContent);
+      const fileContent = fs.readFileSync(rulesPath, 'utf-8');
+      return JSON.parse(fileContent);
     }
-
-    return null;
   } catch (error) {
-    console.error("Error fetching rules:", error);
-    // Final fallback to avoid crash
-    return {};
+    console.error("File error while fetching local rules:", error);
   }
+
+  return null;
 }
