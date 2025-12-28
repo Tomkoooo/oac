@@ -134,7 +134,7 @@ const RulesSection = ({ rules }: RulesSectionProps) => {
                     <Button variant="outline" className="w-full gap-2 border-primary/20 hover:border-primary hover:bg-primary/5 h-12 text-base" asChild>
                       <Link href="/manual">
                         <IconDownload className="h-5 w-5" />
-                        Teljes Szabályzat Letöltése
+                        Teljes Szabályzat Megnyitása
                       </Link>
                     </Button>
                   </div>

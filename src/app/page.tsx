@@ -5,6 +5,8 @@ import ApplicationSection from "@/components/landing/ApplicationSection";
 import { HashScrollHandler } from "@/components/landing/HashScrollHandler";
 import { getRules } from "@/lib/rules";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const rules = await getRules();
 
