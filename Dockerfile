@@ -31,9 +31,16 @@ ARG NEXTAUTH_SECRET
 ARG NEXT_PUBLIC_TDARTS_API_URL
 ARG TDARTS_INTERNAL_SECRET
 ARG INTERNAL_API_SECRET
+ARG SZAMLAZZ_KEY
+ARG STRIPE_SECRET_KEY
+ARG STRIPE_WEBHOOK_SECRET
+ARG STRIPE_WEBHOOK_SECRET
 
 # Set environment variables for build time
 ENV MONGODB_URI=mongodb://admin:admin@100.116.101.72:27017/
+ENV SZAMLAZZ_KEY=asd
+ENV STRIPE_SECRET_KEY=asd
+ENV STRIPE_WEBHOOK_SECRET=asd
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
