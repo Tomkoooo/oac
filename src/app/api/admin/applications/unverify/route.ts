@@ -26,9 +26,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Application not found' }, { status: 404 });
     }
 
-    // Only approved applications can be unverified
-    if (application.status !== 'approved') {
-      return NextResponse.json({ message: 'Only approved applications can be unverified' }, { status: 400 });
+    // Only approved or removal_requested applications can be unverified
+    if (application.status !== 'approved' && application.status !== 'removal_requested') {
+      return NextResponse.json({ message: 'Only approved or removal requested applications can be unverified' }, { status: 400 });
     }
 
     // Call tDarts API to remove OAC league and unverify club

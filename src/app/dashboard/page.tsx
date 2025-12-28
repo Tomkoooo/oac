@@ -1,9 +1,11 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Building2, CheckCircle2, Clock, AlertCircle, Trophy, Loader2, ArrowLeft, ExternalLink, Plus, Users, LayoutDashboard } from "lucide-react";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Building2, CheckCircle2, Clock, AlertCircle, Trophy, Loader2, ArrowLeft, ExternalLink, Plus, LayoutDashboard } from "lucide-react";
 import CreateClubModal from "@/components/CreateClubModal";
+import ApplicationModal from "@/components/ApplicationModal";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -24,10 +26,14 @@ interface Application {
   status: 'submitted' | 'approved' | 'rejected' | 'removal_requested';
   submittedAt: string;
   notes?: string;
+  transferReference?: string;
+  paymentMethod?: 'stripe' | 'transfer';
+  paymentStatus?: 'pending' | 'paid' | 'failed';
 }
 
-export default function DashboardPage() {
+function DashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +44,29 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Handle Payment Verification on Return
+        const paymentSuccess = searchParams?.get('payment_success');
+        const sessionId = searchParams?.get('session_id');
+
+        if (paymentSuccess && sessionId) {
+            try {
+                const verifyRes = await fetch('/api/applications/verify-payment', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ sessionId })
+                });
+                if (verifyRes.ok) {
+                    toast.success('Sikeres fizetés! A jelentkezésed elfogadásra került.');
+                    // Clean URL
+                    window.history.replaceState({}, '', '/dashboard');
+                } else {
+                    toast.error('A fizetés ellenőrzése nem sikerült, de ha levonták az összeget, kérlek vedd fel velünk a kapcsolatot.');
+                }
+            } catch (vErr) {
+                console.error("Verification error", vErr);
+            }
+        }
+
         // Fetch user's clubs from tDarts
         const clubsResponse = await fetch("/api/user/clubs");
         if (!clubsResponse.ok) {
@@ -64,33 +93,10 @@ export default function DashboardPage() {
     };
 
     fetchData();
-  }, [router]);
+  }, [router, searchParams]);
 
-  const handleApply = async (clubId: string, clubName: string) => {
+  const handleApply = (clubId: string, clubName: string) => {
     setApplyingFor(clubId);
-    try {
-      const response = await fetch("/api/applications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clubId, clubName }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Jelentkezés sikertelen");
-      }
-
-      // Refresh applications
-      const appsResponse = await fetch("/api/applications");
-      if (appsResponse.ok) {
-        const appsData = await appsResponse.json();
-        setApplications(appsData.applications || []);
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Hiba történt a jelentkezés során");
-    } finally {
-      setApplyingFor(null);
-    }
   };
 
   const handleRequestRemoval = async (applicationId: string) => {
@@ -141,7 +147,7 @@ export default function DashboardPage() {
       removal_requested: "Eltávolítás kérve"
     };
 
-    const icons = {
+    const icons: Record<string, React.ReactNode> = {
         approved: <CheckCircle2 className="h-3 w-3 mr-1" />,
         rejected: <AlertCircle className="h-3 w-3 mr-1" />,
         pending: <Clock className="h-3 w-3 mr-1" />,
@@ -270,14 +276,33 @@ export default function DashboardPage() {
                                        <span className="text-muted-foreground">Státusz</span>
                                        {getStatusBadge(application!.status)}
                                    </div>
-                                    <div className="flex justify-between items-center text-xs text-muted-foreground">
+                                   <div className="flex justify-between items-center text-xs text-muted-foreground">
                                        <span>Beküldve</span>
                                        <span>{new Date(application!.submittedAt).toLocaleDateString('hu-HU')}</span>
                                     </div>
+                                    
+                                    {application!.paymentMethod === 'transfer' && application!.paymentStatus === 'pending' && application!.transferReference && (
+                                       <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md text-xs space-y-2">
+                                           <div className="font-semibold text-blue-800 flex items-center gap-2">
+                                             <AlertCircle className="h-4 w-4" />
+                                             <span className="uppercase tracking-wider font-bold">Utalási információk</span>
+                                           </div>
+                                           <div className="space-y-1 text-blue-900 border-l-2 border-blue-300 pl-2">
+                                              <p>Bank: <span className="font-semibold">{process.env.NEXT_PUBLIC_BANK_NAME || 'OTP Bank'}</span></p>
+                                              <p>Számlaszám: <span className="font-mono font-bold">{process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || '11700000-00000000'}</span></p>
+                                              <p>Összeg: <span className="font-bold">{new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(Number(process.env.NEXT_PUBLIC_CLUB_APPLICATION_PRICE_GROSS || 25000))}</span></p>
+                                           </div>
+                                           <div className="bg-white p-3 rounded border border-blue-200 text-center shadow-sm">
+                                              <div className="text-[10px] uppercase text-muted-foreground font-bold mb-1">Közleménybe írandó Kód</div>
+                                              <div className="text-xl font-mono font-black tracking-[0.2em] text-primary">{application!.transferReference}</div>
+                                              <div className="text-[10px] text-destructive font-semibold mt-1">Csak ezt a 6 jegyű kódot írd a közleménybe!</div>
+                                           </div>
+                                       </div>
+                                    )}
                                </div>
                            ) : (
                                <div className="text-muted-foreground text-sm py-2">
-                                   Jelentkezz a kluboddal a Nemzeti Ligába, hogy hivatalos versenyeket szervezhess.
+                                   Jelentkezzz a kluboddal a Nemzeti Ligába, hogy hivatalos versenyeket szervezhess.
                                </div>
                            )}
                        </div>
@@ -302,13 +327,22 @@ export default function DashboardPage() {
                                   className="w-full"
                                   size="sm"
                                   onClick={() => handleApply(club._id, club.name)}
-                                  disabled={applyingFor === club._id || club.role !== 'admin'}
-                                  title={club.role !== 'admin' ? 'Csak klub adminisztrátorok jelentkezhetnek' : ''}
+                                  // NOTE: Disabled logic for feature flag
+                                  disabled={applyingFor === club._id || club.role !== 'admin' || process.env.NEXT_PUBLIC_ENABLE_APPLICATION !== 'true'}
+                                  title={
+                                    process.env.NEXT_PUBLIC_ENABLE_APPLICATION !== 'true' 
+                                      ? 'A jelentkezés jelenleg nem elérhető' 
+                                      : (club.role !== 'admin' ? 'Csak klub adminisztrátorok jelentkezhetnek' : '')
+                                  }
                               >
                                   {applyingFor === club._id ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trophy className="h-4 w-4 mr-2" />}
                                   Jelentkezés
                               </Button>
-                              <span className="text-xs text-muted-foreground">Csak klub adminisztrátorok jelentkezhetnek</span>
+                              {process.env.NEXT_PUBLIC_ENABLE_APPLICATION !== 'true' ? (
+                                <span className="text-xs text-destructive font-medium">A jelentkezés jelenleg nem elérhető</span>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">Csak klub adminisztrátorok jelentkezhetnek</span>
+                              )}
                             </div>
                         )}
                     </CardFooter>
@@ -406,6 +440,24 @@ export default function DashboardPage() {
         )}
       </div>
 
+      {/* Application Modal */}
+      {applyingFor && (
+        <ApplicationModal
+          clubId={applyingFor}
+          clubName={clubs.find(c => c._id === applyingFor)?.name || ''}
+          onClose={() => setApplyingFor(null)}
+          onSuccess={async () => {
+             setApplyingFor(null);
+             // Refresh applications
+             const appsResponse = await fetch("/api/applications");
+             if (appsResponse.ok) {
+               const appsData = await appsResponse.json();
+               setApplications(appsData.applications || []);
+             }
+          }}
+        />
+      )}
+
       {/* Create Club Modal */}
       {showCreateClub && (
         <CreateClubModal
@@ -425,3 +477,16 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-background">
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+       </div>
+    }>
+       <DashboardContent />
+    </Suspense>
+  );
+}
+

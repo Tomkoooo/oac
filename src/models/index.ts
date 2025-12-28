@@ -33,6 +33,22 @@ const ApplicationSchema = new Schema({
   submittedAt: { type: Date, default: Date.now },
   notes: { type: String },
   removalType: { type: String, enum: ['delete_league', 'terminate_league'], default: 'delete_league' }, // For removals
+
+  // Billing Information
+  billingName: { type: String },
+  billingZip: { type: String },
+  billingCity: { type: String },
+  billingAddress: { type: String },
+  billingTaxNumber: { type: String },
+  billingEmail: { type: String },
+
+  // Payment Information
+  paymentMethod: { type: String, enum: ['stripe', 'transfer'] },
+  paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
+  paymentId: { type: String }, // Stripe Session ID
+  transferReference: { type: String, unique: true, sparse: true }, // 6-digit reference for bank transfers
+  invoiceSent: { type: Boolean, default: false },
+  invoiceNumber: { type: String },
 }, { timestamps: true });
 
 export const Application = models.Application || model('Application', ApplicationSchema);

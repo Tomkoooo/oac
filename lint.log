@@ -1,0 +1,242 @@
+
+> portal@0.1.0 lint
+> eslint
+
+
+/Users/tomko/programing/oac/portal/.d.ts
+  19:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/scripts/seed-admin.ts
+  46:11  warning  'admin' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/app/admin/applications/page.tsx
+   13:3   warning  'Filter' is defined but never used               @typescript-eslint/no-unused-vars
+   18:17  warning  'HelpCircle' is defined but never used           @typescript-eslint/no-unused-vars
+   65:17  warning  'session' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   96:9   error    'body' is never reassigned. Use 'const' instead  prefer-const
+   96:15  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  143:19  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/admin/clubs/page.tsx
+  24:17  warning  'session' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/app/admin/dashboard/page.tsx
+   8:3   warning  'Settings' is defined but never used      @typescript-eslint/no-unused-vars
+  11:3   warning  'Search' is defined but never used        @typescript-eslint/no-unused-vars
+  15:10  warning  'toast' is defined but never used         @typescript-eslint/no-unused-vars
+  21:10  warning  'Input' is defined but never used         @typescript-eslint/no-unused-vars
+  33:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/admin/guide/page.tsx
+   4:3  warning  'HelpCircle' is defined but never used    @typescript-eslint/no-unused-vars
+   5:3  warning  'CheckCircle2' is defined but never used  @typescript-eslint/no-unused-vars
+   7:3  warning  'Mail' is defined but never used          @typescript-eslint/no-unused-vars
+  10:3  warning  'Search' is defined but never used        @typescript-eslint/no-unused-vars
+  11:3  warning  'Building2' is defined but never used     @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/app/admin/integrity/page.tsx
+   41:10  warning  'loading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   42:38  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   44:54  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   62:14  warning  'error' is defined but never used             @typescript-eslint/no-unused-vars
+   74:36  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   80:68  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   88:15  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   88:23  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   94:82  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   97:26  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   98:28  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   98:46  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   98:66  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  140:67  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  187:46  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  188:46  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  188:70  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  188:88  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  225:53  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/admin/login/page.tsx
+  34:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/admin/mailer/page.tsx
+  13:8  warning  'dynamic' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/app/admin/page.tsx
+  56:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/admin/settings/page.tsx
+    5:3   warning  'Settings' is defined but never used      @typescript-eslint/no-unused-vars
+   17:10  warning  'Input' is defined but never used         @typescript-eslint/no-unused-vars
+   33:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   93:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/admin/stats/page.tsx
+    5:16  warning  'ChartBar' is defined but never used      @typescript-eslint/no-unused-vars
+   11:3   warning  'Calendar' is defined but never used      @typescript-eslint/no-unused-vars
+   13:3   warning  'ArrowUpRight' is defined but never used  @typescript-eslint/no-unused-vars
+   29:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   39:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+   80:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  182:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/admin/users/page.tsx
+    8:3   warning  'ShieldAlert' is defined but never used   @typescript-eslint/no-unused-vars
+   65:14  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+   92:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  109:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  132:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/admin/applications/approve/route.ts
+  104:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/admin/applications/mark-invoiced/route.ts
+  45:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/admin/applications/reject/route.ts
+  57:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/admin/applications/route.ts
+  19:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/admin/applications/unverify/route.ts
+  59:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/admin/clubs/route.ts
+  31:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/admin/config/[key]/route.ts
+  29:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/admin/players/export/route.ts
+  31:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/admin/populate-applicants/route.ts
+  59:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/admin/stats/route.ts
+  27:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/admin/subscriptions/route.ts
+  19:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/admin/users/password/route.ts
+  17:75  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/admin/users/route.ts
+   19:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   36:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   68:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   84:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/applications/request-removal/route.ts
+  42:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/applications/route.ts
+    5:8   warning  'crypto' is defined but never used        @typescript-eslint/no-unused-vars
+   23:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  158:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  264:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/applications/verify-payment/route.ts
+  103:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/auth/validate-token/route.ts
+  44:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/login/route.ts
+  37:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/send-email/route.ts
+  49:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/tdarts/[...path]/route.ts
+  28:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/user/clubs/route.ts
+  22:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/user/create-club/route.ts
+  52:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/app/api/webhooks/stripe/route.ts
+  24:19  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  30:42  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  32:11  warning  'userId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/app/auth/login/page.tsx
+  16:9   warning  'searchParams' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  17:17  warning  'session' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  47:14  warning  'error' is defined but never used                  @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/app/dashboard/page.tsx
+   93:21  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  103:40  warning  'clubName' is defined but never used           @typescript-eslint/no-unused-vars
+  131:19  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  139:11  warning  'variants' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/app/layout.tsx
+  4:8  warning  'Link' is defined but never used   @typescript-eslint/no-unused-vars
+  5:8  warning  'Image' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/app/login/page.tsx
+  17:9  warning  'searchParams' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/app/manual/page.tsx
+  8:29  warning  'CardHeader' is defined but never used  @typescript-eslint/no-unused-vars
+  8:41  warning  'CardTitle' is defined but never used   @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/app/search/page.tsx
+   37:6   warning  React Hook useEffect has a missing dependency: 'fetchRankings'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  143:53  warning  Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  452:54  warning  Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/components/ApplicationModal.tsx
+   4:58  warning  'Check' is defined but never used             @typescript-eslint/no-unused-vars
+  22:10  warning  'step' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  22:16  warning  'setStep' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  69:19  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/components/CreateClubModal.tsx
+  58:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/components/admin/ClientQuill.tsx
+  13:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  25:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/components/admin/EmailComposerModal.tsx
+   7:3  warning  'X' is defined but never used        @typescript-eslint/no-unused-vars
+  11:8  warning  'dynamic' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/components/admin/KpiStats.tsx
+   8:3  warning  'TrendingUp' is defined but never used    @typescript-eslint/no-unused-vars
+   9:3  warning  'ArrowUpRight' is defined but never used  @typescript-eslint/no-unused-vars
+  10:3  warning  'ShieldCheck' is defined but never used   @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/components/auth/AuthContext.tsx
+   9:9   warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  10:22  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  30:9   warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  56:29  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+/Users/tomko/programing/oac/portal/src/components/landing/ApplicationSection.tsx
+  5:10  warning  'IconArrowRight' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/components/landing/HeroSection.tsx
+  2:91  warning  'IconUsers' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tomko/programing/oac/portal/src/lib/auth.ts
+  56:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  81:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  90:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 132 problems (1 error, 131 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

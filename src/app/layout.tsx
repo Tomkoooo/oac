@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Link from "next/link";
-import Image from "next/image";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/components/auth/AuthContext";
 import PublicLayoutWrapper from "@/components/layout/PublicLayoutWrapper";
