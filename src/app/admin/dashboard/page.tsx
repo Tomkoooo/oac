@@ -10,11 +10,13 @@ import {
   RefreshCw,
   Search,
   BarChart3 as ChartBar,
-  ShieldAlert
+  ShieldAlert,
+  Gauge
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import { KpiStats } from "@/components/admin/KpiStats";
+import { PageHeader } from "@/components/admin/PageHeader";
 import { ActivityItem, ActivityFeed } from "@/components/admin/ActivityFeed";
 import { VerifiedGrowthChart } from "@/components/admin/VerifiedGrowthChart";
 import { Button } from "@/components/ui/button";
@@ -72,20 +74,17 @@ export default function AdminDashboardPage() {
   } : null;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Vezérlőpult</h1>
-          <p className="text-muted-foreground">
-            Üdvözöljük, <span className="font-medium text-foreground">{session?.user?.name || "Admin"}</span>!
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => fetchDashboardData()} disabled={refreshing}>
+    <div className="p-6 lg:p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
+      <PageHeader 
+        title="Vezérlőpult" 
+        description={`Üdvözöljük, ${session?.user?.name || "Admin"}. Itt áttekintheti a rendszer állapotát.`}
+        icon={Gauge}
+      >
+        <Button variant="outline" size="sm" onClick={() => fetchDashboardData()} disabled={refreshing} className="gap-2">
             <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-          </Button>
-        </div>
-      </div>
+            Frissítés
+        </Button>
+      </PageHeader>
 
       <KpiStats stats={kpiData} loading={loading} />
 
@@ -94,28 +93,36 @@ export default function AdminDashboardPage() {
              <VerifiedGrowthChart clubData={growthData.clubs} tournamentData={growthData.tournaments} />
              
              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <Button variant="outline" className="h-auto py-4 flex flex-col gap-2 border-border/50 bg-card/40 hover:bg-card/60 hover:border-primary/50 transition-all" asChild>
+                <Button variant="outline" className="h-auto py-6 flex flex-col gap-3 border-border/50 bg-card/40 hover:bg-card/60 hover:border-primary/50 transition-all group" asChild>
                     <Link href="/admin/users">
-                        <Users className="h-6 w-6 text-blue-500" />
-                        <span>Felhasználók</span>
+                        <div className="p-3 rounded-full bg-blue-500/10 group-hover:scale-110 transition-transform duration-300">
+                            <Users className="h-6 w-6 text-blue-500" />
+                        </div>
+                        <span className="font-medium">Felhasználók</span>
                     </Link>
                 </Button>
-                <Button variant="outline" className="h-auto py-4 flex flex-col gap-2 border-border/50 bg-card/40 hover:bg-card/60 hover:border-primary/50 transition-all" asChild>
+                <Button variant="outline" className="h-auto py-6 flex flex-col gap-3 border-border/50 bg-card/40 hover:bg-card/60 hover:border-primary/50 transition-all group" asChild>
                     <Link href="/admin/clubs">
-                        <Building2 className="h-6 w-6 text-purple-500" />
-                        <span>Klubok</span>
+                        <div className="p-3 rounded-full bg-purple-500/10 group-hover:scale-110 transition-transform duration-300">
+                             <Building2 className="h-6 w-6 text-purple-500" />
+                        </div>
+                        <span className="font-medium">Klubok</span>
                     </Link>
                 </Button>
-                <Button variant="outline" className="h-auto py-4 flex flex-col gap-2 border-border/50 bg-card/40 hover:bg-card/60 hover:border-primary/50 transition-all" asChild>
+                <Button variant="outline" className="h-auto py-6 flex flex-col gap-3 border-border/50 bg-card/40 hover:bg-card/60 hover:border-primary/50 transition-all group" asChild>
                     <Link href="/admin/stats">
-                        <ChartBar className="h-6 w-6 text-green-500" />
-                        <span>Statisztikák</span>
+                        <div className="p-3 rounded-full bg-green-500/10 group-hover:scale-110 transition-transform duration-300">
+                            <ChartBar className="h-6 w-6 text-green-500" />
+                        </div>
+                        <span className="font-medium">Statisztikák</span>
                     </Link>
                 </Button>
-                <Button variant="outline" className="h-auto py-4 flex flex-col gap-2 border-border/50 bg-card/40 hover:bg-card/60 hover:border-primary/50 transition-all" asChild>
+                <Button variant="outline" className="h-auto py-6 flex flex-col gap-3 border-border/50 bg-card/40 hover:bg-card/60 hover:border-primary/50 transition-all group" asChild>
                     <Link href="/admin/integrity">
-                        <ShieldAlert className="h-6 w-6 text-destructive" />
-                        <span>Integritás</span>
+                        <div className="p-3 rounded-full bg-destructive/10 group-hover:scale-110 transition-transform duration-300">
+                            <ShieldAlert className="h-6 w-6 text-destructive" />
+                        </div>
+                        <span className="font-medium">Integritás</span>
                     </Link>
                 </Button>
              </div>

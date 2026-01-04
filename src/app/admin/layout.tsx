@@ -18,12 +18,10 @@ export default async function AdminLayout({
 
   return (
     <AdminAuthProvider session={session}>
-      <div className="flex min-h-screen bg-background">
+      <div className="flex min-h-screen bg-background relative selection:bg-primary/20">
         <Sidebar />
-        <main className="flex-1 min-h-screen overflow-x-hidden">
-          <div className="p-4 lg:p-8 animate-in fade-in duration-500">
+        <main className="flex-1 w-full min-h-screen overflow-x-hidden">
             {children}
-          </div>
         </main>
       </div>
     </AdminAuthProvider>

@@ -4,7 +4,7 @@ import dbConnect from '@/lib/db';
 import { Application } from '@/models';
 import { createInvoice } from '@/lib/billing';
 import { stripe } from '@/lib/stripe';
-import { tdartsApi } from '@/lib/tdarts-api';
+
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -46,24 +46,20 @@ export async function POST(req: Request) {
              application.status = 'approved';
              
              // 2. Create League in tDarts
-             try {
-                // We need to re-implement league creation logic here or import a service
-                // Using the same logic as in approve/route.ts
-                await tdartsApi.post(`/api/clubs/${clubId}/leagues/create-oac`, {
-                  creatorId: application.applicantUserId,
-                  name: 'OAC Magyar Nemzeti Amatőr Liga',
-                  description: 'Hivatalos OAC liga',
-                }, {
-                  headers: {
-                    'x-internal-secret': process.env.TDARTS_INTERNAL_SECRET || 'development-secret-change-in-production'
-                  }
-                });
-             } catch (leagueError) {
+              try {
+                const { createOacLeague } = await import('@/lib/tdarts-data');
+                await createOacLeague(
+                  clubId,
+                  application.applicantUserId,
+                  'OAC Magyar Nemzeti Amatőr Liga',
+                  'Hivatalos OAC liga'
+                );
+              } catch (leagueError) {
                 console.error('Failed to auto-create league via webhook:', leagueError);
                 // We typically verify the league creation. If it fails, admin should see it.
                 // But status is approved. Maybe we should log an error note?
                 application.notes = (application.notes || '') + ' [SYSTEM] League creation failed during webhook.';
-             }
+              }
           }
 
           await application.save();

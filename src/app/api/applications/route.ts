@@ -79,18 +79,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Application already submitted' }, { status: 400 });
     }
 
-    // Fetch applicant details from tDarts
+    // Fetch applicant details from database
     let applicantName = '';
     let applicantEmail = ''; // This is User's email, distinct from Billing Email
     try {
-      const { tdartsApi } = await import('@/lib/tdarts-api');
-      const userResponse = await tdartsApi.get(`/api/users/${applicantUserId}`, {
-        headers: {
-          'x-internal-secret': process.env.TDARTS_INTERNAL_SECRET || 'development-secret-change-in-production'
-        }
-      });
-      applicantName = userResponse.data.name || '';
-      applicantEmail = userResponse.data.email || '';
+      const { getUserById } = await import('@/lib/tdarts-data');
+      const user = await getUserById(applicantUserId);
+      if (user) {
+        applicantName = user.name || '';
+        applicantEmail = user.email || '';
+      }
     } catch (fetchError) {
       console.error('Error fetching applicant details:', fetchError);
     }

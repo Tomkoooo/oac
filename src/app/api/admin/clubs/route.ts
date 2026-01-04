@@ -10,21 +10,9 @@ export async function GET() {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch verified clubs from tDarts OAC integration endpoint
-    const tdartsUrl = process.env.NEXT_PUBLIC_TDARTS_API_URL || process.env.TDARTS_API_URL || 'https://tdarts.sironic.hu';
-    const response = await fetch(`${tdartsUrl}/api/integration/oac-clubs`, {
-      headers: {
-        'x-internal-secret': process.env.TDARTS_INTERNAL_SECRET || process.env.NEXT_PUBLIC_TDARTS_INTERNAL_SECRET || ''
-      },
-      cache: 'no-store'
-    });
-
-    if (!response.ok) {
-      console.error('Failed to fetch from tDarts:', response.status, response.statusText);
-      throw new Error('Failed to fetch from tDarts');
-    }
-
-    const data = await response.json();
+    // Fetch verified clubs from database
+    const { getVerifiedClubs } = await import('@/lib/tdarts-data');
+    const data = await getVerifiedClubs();
     
     return NextResponse.json(data);
     

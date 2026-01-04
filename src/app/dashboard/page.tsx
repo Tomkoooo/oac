@@ -237,6 +237,10 @@ function DashboardContent() {
               <Building2 className="h-5 w-5 text-primary" />
               Klubjaim
             </h2>
+            <Button onClick={() => setShowCreateClub(true)} variant="outline" size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Új Klub
+            </Button>
           </div>
 
           {clubs.length > 0 ? (
@@ -350,7 +354,7 @@ function DashboardContent() {
                 );
               })}
             </div>
-          ) : (
+          ) : applications.length === 0 ? (
             <Card className="bg-muted/10 border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center space-y-4">
                     <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
@@ -380,7 +384,7 @@ function DashboardContent() {
                     </div>
                 </CardContent>
             </Card>
-          )}
+          ) : null}
         </div>
 
          {/* Applications Section */}

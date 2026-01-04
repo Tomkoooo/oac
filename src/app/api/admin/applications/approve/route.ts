@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import { Application } from '@/models';
-import { tdartsApi } from '@/lib/tdarts-api';
+
 
 export async function POST(request: Request) {
   try {
@@ -31,20 +31,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Application already processed' }, { status: 400 });
     }
 
-    // Create OAC league in tDarts
+    // Create OAC league in database
     try {
-      await tdartsApi.post(`/api/clubs/${clubId}/leagues/create-oac`, {
-        creatorId: application.applicantUserId,
-        name: 'OAC Magyar Nemzeti Amatőr Liga',
-        description: 'Hivatalos OAC liga',
-      }, {
-        headers: {
-          'x-internal-secret': process.env.TDARTS_INTERNAL_SECRET || 'development-secret-change-in-production'
-        }
-      });
+      const { createOacLeague } = await import('@/lib/tdarts-data');
+      await createOacLeague(
+        clubId,
+        application.applicantUserId,
+        'OAC Magyar Nemzeti Amatőr Liga',
+        'Hivatalos OAC liga'
+      );
     } catch (error) {
-      console.error('Error creating league in tDarts:', error);
-      return NextResponse.json({ message: 'Failed to create league in tDarts' }, { status: 500 });
+      console.error('Error creating league in database:', error);
+      return NextResponse.json({ message: 'Failed to create league in database' }, { status: 500 });
     }
 
     application.status = 'approved';

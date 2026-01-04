@@ -32,18 +32,18 @@ export async function POST() {
     // Fetch and update each application
     for (const app of applications) {
       try {
-        const { tdartsApi } = await import('@/lib/tdarts-api');
-        const userResponse = await tdartsApi.get(`/api/users/${app.applicantUserId}`, {
-          headers: {
-            'x-internal-secret': process.env.TDARTS_INTERNAL_SECRET || 'development-secret-change-in-production'
-          }
-        });
+        const { getUserById } = await import('@/lib/tdarts-data');
+        const user = await getUserById(app.applicantUserId);
 
-        app.applicantName = userResponse.data.name || '';
-        app.applicantEmail = userResponse.data.email || '';
-        await app.save();
-        updated++;
-        console.log(`Updated application ${app._id} with user details`);
+        if (user) {
+          app.applicantName = user.name || '';
+          app.applicantEmail = user.email || '';
+          await app.save();
+          updated++;
+          console.log(`Updated application ${app._id} with user details`);
+        } else {
+             console.log(`User not found for application ${app._id}`);
+        }
       } catch (error) {
         console.error(`Failed to fetch details for user ${app.applicantUserId}:`, error);
         failed++;

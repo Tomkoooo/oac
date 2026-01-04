@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,7 +10,10 @@ import {
   Shield, 
   Mail,
   FileJson as FileCode,
-  Users
+  Users,
+  Edit,
+  CheckCircle,
+  AlertCircle
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,8 +21,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { PageHeader } from "@/components/admin/PageHeader";
 import { VisualRulesEditor } from "@/components/admin/VisualRulesEditor";
+import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
@@ -32,6 +46,12 @@ export default function SettingsPage() {
 
   const [rules, setRules] = useState<any>(null);
   const [rulesLoading, setRulesLoading] = useState(true);
+
+  // Dialog states
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [selectedTemplateKey, setSelectedTemplateKey] = useState<keyof typeof emailTemplates | null>(null);
+  const [tempTemplateValue, setTempTemplateValue] = useState("");
+  const [rulesDialogOpen, setRulesDialogOpen] = useState(false);
 
   useEffect(() => {
     // Fetch rules & email templates from DB
@@ -115,128 +135,183 @@ export default function SettingsPage() {
     }
   };
 
+  const openEmailDialog = (key: keyof typeof emailTemplates) => {
+      setSelectedTemplateKey(key);
+      setTempTemplateValue(emailTemplates[key]);
+      setEmailDialogOpen(true);
+  };
+
+  const saveEmailTemplate = () => {
+      if (selectedTemplateKey) {
+          setEmailTemplates(prev => ({ ...prev, [selectedTemplateKey]: tempTemplateValue }));
+          toast.success("Sablon frissítve (Ne felejtsen el menteni!)");
+          setEmailDialogOpen(false);
+      }
+  };
+
+  const getTemplateLabel = (key: string) => {
+      switch(key) {
+          case 'applicationReceived': return 'Jelentkezés Beérkezett';
+          case 'applicationApproved': return 'Jóváhagyási Értesítő';
+          case 'applicationRejected': return 'Elutasítási Értesítő';
+          default: return key;
+      }
+  };
+
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Beállítások</h1>
-          <p className="text-muted-foreground">Portál és automatizációs beállítások</p>
-        </div>
-        <Button onClick={saveSettings} className="gap-2 bg-success text-success-foreground hover:bg-success/90" disabled={loading}>
+    <div className="p-6 lg:p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
+      <PageHeader 
+        title="Beállítások" 
+        description="Portál és automatizációs beállítások kezelése."
+        icon={Settings}
+      >
+        <Button onClick={saveSettings} className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Mentés
+          Változások Mentése
         </Button>
-      </div>
+      </PageHeader>
 
-      <div className="grid gap-6">
-        {/* Email Templates */}
-        <Card className="border-border/40 bg-card/40 backdrop-blur-md">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Email Templates Section */}
+        <Card className="md:col-span-2 glass-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-warning" />
-              Automata Email Sablonok
+              <Mail className="h-5 w-5 text-primary" />
+              Email Sablonok
             </CardTitle>
             <CardDescription>
-              Ezeket az üzeneteket kapják meg a klubok a jelentkezési folyamat során.
+              A rendszer által küldött automatikus email üzenetek szerkesztése.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label>Jelentkezés Beérkezett</Label>
-              <textarea 
-                className="w-full flex min-h-[80px] rounded-md border border-border/40 bg-background/50 px-3 py-2 text-sm"
-                value={emailTemplates.applicationReceived}
-                onChange={(e) => setEmailTemplates({ ...emailTemplates, applicationReceived: e.target.value })}
-              />
-            </div>
-            
-            <Separator className="bg-border/40" />
-            
-            <div className="space-y-2">
-              <Label>Jóváhagyási Értesítő</Label>
-              <textarea 
-                className="w-full flex min-h-[80px] rounded-md border border-border/40 bg-background/50 px-3 py-2 text-sm"
-                value={emailTemplates.applicationApproved}
-                onChange={(e) => setEmailTemplates({ ...emailTemplates, applicationApproved: e.target.value })}
-              />
-            </div>
-
-            <Separator className="bg-border/40" />
-
-            <div className="space-y-2">
-              <Label>Elutasítási Értesítő</Label>
-              <textarea 
-                className="w-full flex min-h-[80px] rounded-md border border-border/40 bg-background/50 px-3 py-2 text-sm"
-                value={emailTemplates.applicationRejected}
-                onChange={(e) => setEmailTemplates({ ...emailTemplates, applicationRejected: e.target.value })}
-              />
-            </div>
+          <CardContent className="grid gap-4">
+             {Object.keys(emailTemplates).map((key) => {
+                 const k = key as keyof typeof emailTemplates;
+                 return (
+                    <div key={k} className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-muted/20 hover:bg-muted/30 transition-colors group">
+                        <div className="space-y-1">
+                            <p className="font-medium">{getTemplateLabel(k)}</p>
+                            <p className="text-xs text-muted-foreground line-clamp-1 max-w-[300px]">{emailTemplates[k]}</p>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={() => openEmailDialog(k)} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Edit className="h-4 w-4 mr-2" />
+                            Szerkesztés
+                        </Button>
+                    </div>
+                 )
+             })}
           </CardContent>
         </Card>
 
-        {/* OAC Rules JSON Editor */}
-        <Card className="border-border/40 bg-card/40 backdrop-blur-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileCode className="h-5 w-5 text-warning" />
-              OAC Szabályzat (JSON)
-            </CardTitle>
-            <CardDescription>
-              A főoldalon megjelenő szabályok és pontrendszer szerkesztése.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {rulesLoading ? (
-              <div className="flex justify-center py-10">
-                <Loader2 className="h-6 w-6 animate-spin text-warning" />
-              </div>
-            ) : rules ? (
-              <VisualRulesEditor 
-                initialRules={rules}
-                onChange={(updatedRules) => setRules(updatedRules)}
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-6">
-                Nem sikerült betölteni a szabályokat
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        {/* Administrative Actions */}
+        <div className="space-y-6">
+            {/* Rules Editor */}
+            <Card className="glass-card border-primary/20">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                    <FileCode className="h-5 w-5 text-warning" />
+                    OAC Szabályzat
+                    </CardTitle>
+                    <CardDescription>
+                    A szabályzat JSON formátumú szerkesztése.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button variant="secondary" className="w-full" onClick={() => setRulesDialogOpen(true)}>
+                        <FileCode className="h-4 w-4 mr-2" />
+                        Szabályzat Szerkesztése
+                    </Button>
+                </CardContent>
+            </Card>
 
-        {/* Administrative Tools */}
-        <Card className="border-border/40 bg-card/40 backdrop-blur-md border-warning/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-warning">
-              <Shield className="h-5 w-5" />
-              Adminisztratív Eszközök
-            </CardTitle>
-            <CardDescription>
-              Rendszerkarbantartási és adatfrissítési műveletek.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-muted/20">
-              <div className="space-y-1">
-                <p className="font-semibold flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Jelentkezők Szinkronizálása
-                </p>
-                <p className="text-xs text-muted-foreground">Hiányzó jelentkező nevek és emailek lekérése a tDarts-ból.</p>
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-2"
-                onClick={handlePopulateApplicants}
-                disabled={populating}
-              >
-                {populating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-                Szinkronizálás
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            {/* Sync Tool */}
+            <Card className="glass-card">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-muted-foreground" />
+                    Adatbázis Eszközök
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="p-4 rounded-xl bg-muted/20 space-y-4">
+                         <div className="flex items-start gap-3">
+                             <AlertCircle className="h-5 w-5 text-warning mt-0.5 shrink-0" />
+                             <div className="text-sm text-muted-foreground">
+                                 <p className="font-medium text-foreground mb-1">Jelentkezők Szinkronizálása</p>
+                                 Hiányzó nevek és emailek lekérése.
+                             </div>
+                         </div>
+                         <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full gap-2"
+                            onClick={handlePopulateApplicants}
+                            disabled={populating}
+                        >
+                            {populating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                            Szinkronizálás Indítása
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
       </div>
+
+      {/* Dialogs */}
+      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                  <DialogTitle>Email Sablon Szerkesztése</DialogTitle>
+                  <DialogDescription>
+                      {selectedTemplateKey && getTemplateLabel(selectedTemplateKey)}
+                  </DialogDescription>
+              </DialogHeader>
+              <div className="py-4">
+                  <Label className="mb-2 block">Üzenet szövege</Label>
+                  <textarea 
+                      className="w-full min-h-[150px] p-3 rounded-lg border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      value={tempTemplateValue}
+                      onChange={(e) => setTempTemplateValue(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                      Használhat egyszerű szöveget. A HTML nem támogatott.
+                  </p>
+              </div>
+              <DialogFooter>
+                  <Button variant="ghost" onClick={() => setEmailDialogOpen(false)}>Mégse</Button>
+                  <Button onClick={saveEmailTemplate}>Frissítés</Button>
+              </DialogFooter>
+          </DialogContent>
+      </Dialog>
+
+      <Dialog open={rulesDialogOpen} onOpenChange={setRulesDialogOpen}>
+           <DialogContent className="max-w-[90vw] h-[90vh] flex flex-col">
+              <DialogHeader>
+                  <DialogTitle>OAC Szabályzat Szerkesztő</DialogTitle>
+                  <DialogDescription>
+                      A változtatások érvényesítéséhez kattintson a mentés gombra a főoldalon a bezárás után.
+                  </DialogDescription>
+              </DialogHeader>
+              <div className="flex-1 overflow-y-auto min-h-0 border rounded-lg bg-background/50 p-4">
+                {rulesLoading ? (
+                    <div className="flex justify-center items-center h-full">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : rules ? (
+                    <VisualRulesEditor 
+                        initialRules={rules}
+                        onChange={(updatedRules) => setRules(updatedRules)}
+                    />
+                ) : (
+                    <div className="flex justify-center items-center h-full text-muted-foreground">
+                        Hiba a szabályok betöltésekor
+                    </div>
+                )}
+              </div>
+              <DialogFooter>
+                  <Button onClick={() => setRulesDialogOpen(false)}>Kész</Button>
+              </DialogFooter>
+          </DialogContent>
+      </Dialog>
     </div>
   );
 }

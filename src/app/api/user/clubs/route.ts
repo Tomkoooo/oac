@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { tdartsApi } from '@/lib/tdarts-api';
 
 export async function GET() {
   try {
@@ -11,18 +10,26 @@ export async function GET() {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch user's clubs from tDarts
-    const response = await tdartsApi.get('/api/users/me/clubs', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // Decode JWT locally
+    let userId = '';
+    try {
+        const tokenPayload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+        userId = tokenPayload.userId || tokenPayload.id || tokenPayload.sub;
+    } catch (e) {
+        return NextResponse.json({ message: 'Invalid token format' }, { status: 401 });
+    }
 
-    return NextResponse.json(response.data);
+    if (!userId) {
+       return NextResponse.json({ message: 'Invalid token payload' }, { status: 401 });
+    }
+
+    // Fetch user's clubs from database
+    const { getUserClubs } = await import('@/lib/tdarts-data');
+    const clubs = await getUserClubs(userId);
+
+    return NextResponse.json(clubs);
   } catch (error: any) {
-    console.error('Fetch clubs error:', error.response?.data || error.message);
-    const status = error.response?.status || 500;
-    const message = error.response?.data?.message || 'Internal Server Error';
-    return NextResponse.json({ message }, { status });
+    console.error('Fetch clubs error:', error.message);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -1,24 +1,24 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button'; // Note: tDarts uses @/components/ui/Button, check casing if needed. OAC usually uses lowercase.
+import { Button } from '@/components/ui/button';
 
 export default function Footer() {
   return (
-    <footer className="bg-card text-foreground border-t border-border mt-auto">
+    <footer className="relative z-10 bg-[#4a2828] text-foreground border-t border-border mt-auto w-full">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
           {/* Column 1: Legal & Info */}
           <div className="flex flex-col space-y-4">
             <h3 className="font-bold text-lg mb-2">Információk</h3>
-            <Link href="/privacy" className="hover:text-primary transition-colors text-muted-foreground">
-              Adatkezelési tájékoztató
-            </Link>
-            <Link href="/terms" className="hover:text-primary transition-colors text-muted-foreground">
-              Általános Szerződési Feltételek
-            </Link>
-            <Link href="/feedback" className="hover:text-primary transition-colors text-muted-foreground">
+            <a href="klubadat_gdpr.pdf" className="hover:text-primary transition-colors text-muted-foreground">
+              Klub adatokról szoló adatkezelési tájékoztató
+            </a>
+            <a href="jatekos_gdpr.pdf" className="hover:text-primary transition-colors text-muted-foreground">
+              Játékosok adatkezelési tájékoztató
+            </a>
+            <Link href="https://tdarts.hu/feedback" className="hover:text-primary transition-colors text-muted-foreground">
               Kapcsolat / Visszajelzés
             </Link>
             <p className="text-sm text-muted-foreground mt-auto pt-4">
@@ -38,23 +38,23 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   className="text-primary hover:underline font-medium"
                 >
-                  Sironic Kft.
+                  Sironic Rendszerház
                 </Link>
               </p>
               
               <div className="mt-4 p-4 bg-muted rounded-lg border border-border">
-                <p className="text-sm font-semibold mb-2 text-foreground">Próbáld ki az OAC portált is!</p>
+                <p className="text-sm font-semibold mb-2 text-foreground">Tudj meg többet a tDarts platfromról!</p>
                 <Button 
                   variant="outline"
                   className="w-full"
                   asChild
                 >
                   <Link 
-                    href="https://amator.tdarts.hu" 
+                    href="https://tdarts.hu" 
                     target="_blank" 
                     rel="noopener noreferrer"
                   >
-                    OAC - Amatőr Darts
+                    tDarts
                   </Link>
                 </Button>
               </div>
@@ -66,23 +66,9 @@ export default function Footer() {
             <h3 className="font-bold text-lg mb-2">Partnereink</h3>
             <div className="grid grid-cols-3 gap-4 items-center">
               <div className="bg-white p-2 rounded-lg transition duration-300 flex items-center justify-center h-20 w-20 relative">
-                 {/* Using generic path for partners or assume they exist. tDarts has specific logos. 
-                     We should try to use the same if assets are available, or placeholders. 
-                     Since we can't see assets effectively, we will assume they might be missing on OAC unless copied. 
-                     For now, we keep the structure but handle missing images gracefully with alt text if needed.
-                     However, user asked to copy. I will assume the paths /partners/... might need to be /tdarts_fav.svg or similar if assets are missing.
-                     But let's stick to the code provided in the source file. */}
                 <Image 
                   src="/partners/mdsz_logo.png" 
                   alt="Magyar Darts Szövetség" 
-                  fill
-                  className="object-contain p-1"
-                />
-              </div>
-              <div className="bg-white p-2 rounded-lg transition duration-300 flex items-center justify-center h-20 w-20 relative">
-                <Image 
-                  src="/partners/dartsbarlang_logo.png" 
-                  alt="DartsBarlang" 
                   fill
                   className="object-contain p-1"
                 />

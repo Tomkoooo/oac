@@ -10,23 +10,14 @@ export async function GET() {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch all players from tDarts with full data
-    const tdartsUrl = process.env.NEXT_PUBLIC_TDARTS_API_URL || process.env.TDARTS_API_URL || 'https://tdarts.sironic.hu';
-    const response = await fetch(`${tdartsUrl}/api/integration/oac-players`, {
-      headers: {
-        'x-internal-secret': process.env.TDARTS_INTERNAL_SECRET || process.env.NEXT_PUBLIC_TDARTS_INTERNAL_SECRET || ''
-      },
-      cache: 'no-store'
-    });
-
-    if (!response.ok) {
-      console.error('Failed to fetch from tDarts:', response.status, response.statusText);
-      throw new Error('Failed to fetch from tDarts');
-    }
-
-    const data = await response.json();
+    // Fetch all players from database
+    const { getOacPlayersExport } = await import('@/lib/tdarts-data');
+    const data = await getOacPlayersExport();
     
-    return NextResponse.json(data);
+    return NextResponse.json({
+        players: data,
+        totalCount: data.length
+    });
     
   } catch (error: any) {
     console.error('Fetch players error:', error.message);

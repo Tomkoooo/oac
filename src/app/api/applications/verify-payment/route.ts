@@ -3,7 +3,7 @@ import { stripe } from '@/lib/stripe';
 import dbConnect from '@/lib/db';
 import { Application } from '@/models';
 import { createInvoice } from '@/lib/billing';
-import { tdartsApi } from '@/lib/tdarts-api';
+
 
 export async function POST(req: Request) {
   try {
@@ -23,8 +23,8 @@ export async function POST(req: Request) {
     const applicationId = session.metadata?.applicationId;
     const clubId = session.metadata?.clubId;
 
-    if (!applicationId) {
-        return NextResponse.json({ message: 'Application ID missing in metadata' }, { status: 400 });
+    if (!applicationId || !clubId) {
+        return NextResponse.json({ message: 'Application ID or Club ID missing in metadata' }, { status: 400 });
     }
 
     await dbConnect();
@@ -42,18 +42,15 @@ export async function POST(req: Request) {
         if (application.status === 'submitted') {
              application.status = 'approved';
              
-             // Create League
+              // Create League
              try {
-                // Using internal secret for auth
-                await tdartsApi.post(`/api/clubs/${clubId}/leagues/create-oac`, {
-                  creatorId: application.applicantUserId,
-                  name: 'OAC Magyar Nemzeti Amatőr Liga',
-                  description: 'Hivatalos OAC liga',
-                }, {
-                  headers: {
-                    'x-internal-secret': process.env.TDARTS_INTERNAL_SECRET || 'development-secret-change-in-production'
-                  }
-                });
+                const { createOacLeague } = await import('@/lib/tdarts-data');
+                await createOacLeague(
+                  clubId,
+                  application.applicantUserId || 'unknown',
+                  'OAC Magyar Nemzeti Amatőr Liga',
+                  'Hivatalos OAC liga'
+                );
              } catch (leagueError) {
                 console.error('Failed to create league during verification:', leagueError);
                 application.notes = (application.notes || '') + ' [SYSTEM] League creation failed during verification.';

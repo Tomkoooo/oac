@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { tdartsApi } from '@/lib/tdarts-api';
+
 
 /**
  * POST /api/user/create-club
@@ -32,32 +32,30 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    // Create club in tDarts with internal secret for service-to-service auth
-    const response = await tdartsApi.post('/api/clubs/create', {
-      creatorId: userId,
-      clubData: {
+    // Create club in database
+    const { createClub } = await import('@/lib/tdarts-data');
+    
+    // Ensure contact is properly formatted object if needed, but schema handles it.
+    // passing body fields directly
+    const club = await createClub(userId, {
         name,
         description,
         location,
         address,
-        contact,
-      }
-    }, {
-      headers: {
-        'x-internal-secret': process.env.TDARTS_INTERNAL_SECRET || 'development-secret-change-in-production'
-      }
+        contact
     });
 
-    return NextResponse.json(response.data);
+    return NextResponse.json(club);
+
   } catch (error: any) {
     console.error('Create club error:', error);
-    console.error('Error response data:', error.response?.data);
-    console.error('Error response status:', error.response?.status);
     
-    const status = error.response?.status || 500;
-    // tDarts API returns errors in 'error' field, not 'message'
-    const message = error.response?.data?.error || error.response?.data?.message || error.message || 'Internal Server Error';
-    
-    return NextResponse.json({ message }, { status });
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+        return NextResponse.json({ message: error.message }, { status: 400 });
+    }
+
+    const message = error.message || 'Internal Server Error';
+    return NextResponse.json({ message }, { status: 500 });
   }
 }

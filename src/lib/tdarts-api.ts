@@ -1,23 +1,6 @@
-import axios from 'axios';
+"use server";
 
-const TDARTS_API_URL = process.env.NEXT_PUBLIC_TDARTS_API_URL || 'https://tdarts.sironic.hu';
-const PROXY_API_URL = '/api/tdarts';
-
-// Original client for auth/user endpoints (direct access)
-export const tdartsApi = axios.create({
-  baseURL: TDARTS_API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Proxy client for verified public data (injects secret server-side)
-export const tdartsProxyApi = axios.create({
-  baseURL: PROXY_API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import { getVerifiedClubs, getVerifiedLeagues, getVerifiedTournaments, getOacRankings as getOacRankingsFromDb } from './tdarts-data';
 
 export interface Club {
   _id: string;
@@ -44,7 +27,7 @@ export interface TournamentSettings {
   name: string;
   startDate: string;
   endDate?: string;
-  status: 'pending' | 'ongoing' | 'finished' | 'active' | 'group-stage' | 'knockout'; // Added ongoing/active aliases
+  status: 'pending' | 'ongoing' | 'finished' | 'active' | 'group-stage' | 'knockout';
   location?: string;
   type?: 'amateur' | 'open';
   entryFee?: number;
@@ -59,8 +42,8 @@ export interface Tournament {
   tournamentSettings: TournamentSettings;
   clubId?: Club | string;
   league?: League | string;
-  isVerified?: boolean; // Legacy field
-  verified?: boolean;   // New field
+  isVerified?: boolean;
+  verified?: boolean;
   playerCount?: number;
 }
 
@@ -76,7 +59,7 @@ export interface RankingPlayer {
 }
 
 /**
- * Fetch verified data from the new public endpoints via proxy
+ * Fetch verified data directly from database
  */
 export const getPublicData = async (type: 'leagues' | 'tournaments' | 'clubs' | 'all' = 'all') => {
   try {
@@ -90,24 +73,24 @@ export const getPublicData = async (type: 'leagues' | 'tournaments' | 'clubs' | 
 
     if (type === 'clubs' || type === 'all') {
       promises.push(
-        tdartsProxyApi.get('/public/verified-clubs').then(res => {
-          result.clubs = res.data.clubs || [];
+        getVerifiedClubs().then(data => {
+          result.clubs = (data.clubs as unknown) as Club[] || [];
         })
       );
     }
 
     if (type === 'leagues' || type === 'all') {
       promises.push(
-        tdartsProxyApi.get('/public/verified-leagues').then(res => {
-          result.leagues = res.data.leagues || [];
+        getVerifiedLeagues().then(data => {
+          result.leagues = (data.leagues as unknown) as League[] || [];
         })
       );
     }
 
     if (type === 'tournaments' || type === 'all') {
       promises.push(
-        tdartsProxyApi.get('/public/verified-tournaments', { params: { limit: 50 } }).then(res => {
-          result.tournaments = res.data.tournaments || [];
+        getVerifiedTournaments(50).then(data => {
+          result.tournaments = (data.tournaments as unknown) as Tournament[] || [];
         })
       );
     }
@@ -121,14 +104,14 @@ export const getPublicData = async (type: 'leagues' | 'tournaments' | 'clubs' | 
 };
 
 /**
- * Fetch OAC Rankings with search and pagination
+ * Fetch OAC Rankings directly from database
  */
 export const getOacRankings = async (params: { search?: string; limit?: number; skip?: number }) => {
   try {
-    const response = await tdartsProxyApi.get('/public/oac/rankings', { params });
+    const { rankings, total } = await getOacRankingsFromDb(params.limit || 20, params.skip || 0, params.search);
     return {
-      rankings: (response.data.rankings || []) as RankingPlayer[],
-      total: (response.data.total || 0) as number
+      rankings: (rankings || []) as RankingPlayer[],
+      total: (total || 0) as number
     };
   } catch (error) {
     console.error('Error fetching OAC rankings:', error);

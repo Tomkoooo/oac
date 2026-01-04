@@ -34,12 +34,8 @@ export async function POST(request: Request) {
     // If application was approved, we need to remove the OAC league and unverify the club
     if (application.status === 'approved') {
       try {
-        const { tdartsApi } = await import('@/lib/tdarts-api');
-        await tdartsApi.delete(`/api/clubs/${application.clubId}/leagues/remove-oac`, {
-          headers: {
-            'x-internal-secret': process.env.TDARTS_INTERNAL_SECRET || 'development-secret-change-in-production'
-          }
-        });
+        const { removeOacLeague } = await import('@/lib/tdarts-data');
+        await removeOacLeague(application.clubId, 'delete_league');
       } catch (error) {
         console.error('Error removing OAC league in tDarts:', error);
         // Continue to update local status even if remote fails (or maybe fail?)

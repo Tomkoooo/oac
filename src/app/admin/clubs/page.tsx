@@ -3,9 +3,12 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Loader2, Building2, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, Building2, CheckCircle, XCircle, Users } from "lucide-react";
 import { toast } from "react-hot-toast";
 import TelemetryChart from "@/components/TelemetryChart";
+import { PageHeader } from "@/components/admin/PageHeader";
+import { StatCard } from "@/components/admin/StatCard";
+import { AdminTable, AdminTableHeader, AdminTableRow, AdminTableHead, AdminTableBody, AdminTableCell } from "@/components/admin/AdminTable";
 
 
 interface Club {
@@ -77,87 +80,97 @@ export default function AdminClubsPage() {
   }
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div>
-          <h1 className="text-4xl font-bold">OAC Klubok</h1>
-          <p className="text-muted-foreground mt-2">Hitelesített OAC klubok megtekintése</p>
-        </div>
+    <div className="p-6 lg:p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
+      <PageHeader 
+        title="OAC Klubok" 
+        description="A hivatalosan regisztrált és hitelesített klubok listája."
+        icon={Building2}
+      >
+         <div className="flex gap-2">
+             {/* Future: Add 'New Club' button or Export options here */}
+         </div>
+      </PageHeader>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Hitelesített klubok</p>
-                <p className="text-3xl font-bold mt-1">{stats.total}</p>
-              </div>
-              <Building2 className="h-10 w-10 text-primary opacity-50" />
-            </div>
-          </div>
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Aktív klubok</p>
-                <p className="text-3xl font-bold mt-1 text-success">{clubs.filter(c => c.isActive).length}</p>
-              </div>
-              <CheckCircle className="h-10 w-10 text-success opacity-50" />
-            </div>
-          </div>
-        </div>
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StatCard 
+            title="Hitelesített klubok" 
+            value={stats.total} 
+            icon={CheckCircle}
+            iconClassName="text-success bg-success/10"
+        />
+        <StatCard 
+            title="Aktív klubok" 
+            value={clubs.filter(c => c.isActive).length} 
+            icon={Building2}
+            iconClassName="text-primary bg-primary/10"
+        />
+        {/* Can add more stats here, e.g. Total Members */}
+      </div>
 
-
-        {/* Telemetry Chart */}
-        <div className="glass-card p-6">
-          <h2 className="text-2xl font-bold mb-4">OAC Klub növekedés</h2>
-          <TelemetryChart data={telemetryData} />
-        </div>
-
-        {/* Clubs Table */}
-        <div className="glass-card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Klub neve</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Helyszín</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Tagok</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Versenyek</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Státusz</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Létrehozva</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredClubs.map((club) => (
-                  <tr key={club._id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-6 py-4 font-medium">{club.name}</td>
-                    <td className="px-6 py-4 text-muted-foreground">{club.location}</td>
-                    <td className="px-6 py-4">{club.memberCount || 0}</td>
-                    <td className="px-6 py-4">{club.tournamentCount || 0}</td>
-                    <td className="px-6 py-4">
-                      {club.verified ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success/20 text-success text-sm">
-                          <CheckCircle className="h-4 w-4" />
-                          Hitelesített
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted text-muted-foreground text-sm">
-                          <XCircle className="h-4 w-4" />
-                          Nem hitelesített
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground">
-                      {new Date(club.createdAt).toLocaleDateString('hu-HU')}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {/* Telemetry Chart 
+      <div className="glass-card p-6">
+        <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-muted-foreground" />
+            Klub növekedés
+        </h2>
+        <div className="h-[300px] w-full">
+            <TelemetryChart data={telemetryData} />
         </div>
       </div>
+      */}
+
+      {/* Clubs Table */}
+      <AdminTable>
+        <AdminTableHeader>
+          <AdminTableRow>
+            <AdminTableHead>Klub neve</AdminTableHead>
+            <AdminTableHead>Helyszín</AdminTableHead>
+            <AdminTableHead>Tagok</AdminTableHead>
+            <AdminTableHead>Versenyek</AdminTableHead>
+            <AdminTableHead>Státusz</AdminTableHead>
+            <AdminTableHead>Létrehozva</AdminTableHead>
+          </AdminTableRow>
+        </AdminTableHeader>
+        <AdminTableBody>
+          {filteredClubs.length === 0 ? (
+              <AdminTableRow>
+                  <AdminTableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      Nincs megjeleníthető adat.
+                  </AdminTableCell>
+              </AdminTableRow>
+          ) : (
+             filteredClubs.map((club) => (
+            <AdminTableRow key={club._id} className="cursor-pointer" onClick={() => toast("Klub részletek hamarosan...", { icon: "🚧" })}>
+              <AdminTableCell className="font-medium text-foreground">{club.name}</AdminTableCell>
+              <AdminTableCell className="text-muted-foreground">{club.location}</AdminTableCell>
+              <AdminTableCell>
+                  <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      {club.memberCount || 0}
+                  </div>
+              </AdminTableCell>
+              <AdminTableCell>{club.tournamentCount || 0}</AdminTableCell>
+              <AdminTableCell>
+                {club.verified ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-success/10 text-success text-xs font-medium border border-success/20">
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    Hitelesített
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-medium border border-border">
+                    <XCircle className="h-3.5 w-3.5" />
+                    Nem hitelesített
+                  </span>
+                )}
+              </AdminTableCell>
+              <AdminTableCell className="text-muted-foreground">
+                {new Date(club.createdAt).toLocaleDateString('hu-HU', { year: 'numeric', month: 'short', day: 'numeric' })}
+              </AdminTableCell>
+            </AdminTableRow>
+          )))}
+        </AdminTableBody>
+      </AdminTable>
     </div>
   );
 }

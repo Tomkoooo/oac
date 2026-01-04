@@ -72,19 +72,24 @@ export function Sidebar({ className }: SidebarProps) {
               </h3>
               <div className="space-y-1">
                 {group.items.map((item, j) => {
-                   const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                   const isActive = pathname === item.href || (pathname.startsWith(item.href + "/") && item.href !== "/admin");
                    return (
                     <Button
                       key={j}
                       asChild
                       variant={isActive ? "secondary" : "ghost"}
                       className={cn(
-                        "w-full justify-start gap-2", 
-                        isActive && "bg-secondary/80 font-medium"
+                        "w-full justify-start gap-3 relative overflow-hidden transition-all duration-300", 
+                        isActive 
+                          ? "bg-gradient-to-r from-primary/20 to-primary/5 text-primary font-medium hover:from-primary/25 hover:to-primary/10 border border-primary/20" 
+                          : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                       )}
                     >
                       <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
+                         {isActive && (
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
+                         )}
+                        <item.icon className={cn("h-4 w-4 transition-colors", isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
                         {item.title}
                       </Link>
                     </Button>
@@ -108,11 +113,13 @@ export function Sidebar({ className }: SidebarProps) {
                 <p className="text-xs text-muted-foreground truncate">{session?.user?.email || "loading..."}</p>
             </div>
          </div>
-         <Button variant="ghost" className="w-full justify-start gap-2 mt-2 text-muted-foreground hover:text-destructive" asChild>
-             <Link href="/api/auth/signout">
-                 <ChevronLeft className="h-4 w-4" />
-                 Kijelentkezés
-             </Link>
+         <Button 
+             variant="ghost" 
+             className="w-full justify-start gap-2 mt-2 text-muted-foreground hover:text-destructive" 
+             onClick={() => import("next-auth/react").then(({ signOut }) => signOut({ callbackUrl: "/auth/login" }))}
+         >
+             <ChevronLeft className="h-4 w-4" />
+             Kijelentkezés
          </Button>
       </div>
     </div>

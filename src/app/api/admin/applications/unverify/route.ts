@@ -33,18 +33,11 @@ export async function POST(request: Request) {
 
     // Call tDarts API to remove OAC league and unverify club
     try {
-      const { tdartsApi } = await import('@/lib/tdarts-api');
-      await tdartsApi.delete(`/api/clubs/${clubId}/leagues/remove-oac`, {
-        headers: {
-          'x-internal-secret': process.env.TDARTS_INTERNAL_SECRET || 'development-secret-change-in-production'
-        },
-        data: {
-          removalType // Pass the removal type to tDarts
-        }
-      });
+      const { removeOacLeague } = await import('@/lib/tdarts-data');
+      await removeOacLeague(clubId, removalType as any);
     } catch (error) {
-      console.error('Error removing OAC league in tDarts:', error);
-      return NextResponse.json({ message: 'Failed to remove league in tDarts' }, { status: 500 });
+      console.error('Error removing OAC league in database:', error);
+      return NextResponse.json({ message: 'Failed to remove league in database' }, { status: 500 });
     }
 
     // Update application status to rejected

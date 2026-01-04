@@ -1,0 +1,78 @@
+import { PlayerDocument } from "@/interface/player.interface";
+import mongoose from "mongoose";
+
+const PlayerSchema = new mongoose.Schema<PlayerDocument>({
+    userRef: { type: mongoose.Types.ObjectId, ref: "User", required: false },
+    name: { type: String, required: true },
+    isRegistered: { type: Boolean, default: false }, // Indicates if this is a registered user
+    stats: {
+        tournamentsPlayed: { type: Number, default: 0 },
+        matchesPlayed: { type: Number, default: 0 },
+        legsWon: { type: Number, default: 0 },
+        legsLost: { type: Number, default: 0 },
+        oneEightiesCount: { type: Number, default: 0 },
+        highestCheckout: { type: Number, default: 0 },
+        avg: { type: Number, default: 0 },
+        averagePosition: { type: Number, default: 0 },
+        bestPosition: { type: Number, default: 999 },
+        totalMatchesWon: { type: Number, default: 0 },
+        totalMatchesLost: { type: Number, default: 0 },
+        totalLegsWon: { type: Number, default: 0 },
+        totalLegsLost: { type: Number, default: 0 },
+        total180s: { type: Number, default: 0 },
+        mmr: { type: Number, default: 800 }, // Matchmaking Rating - starts at 800 (legacy 1200)
+        oacMmr: { type: Number, default: 800 }, // OAC National MMR - starts at 800
+    },
+    tournamentHistory: [{
+        tournamentId: { type: String, required: true },
+        tournamentName: { type: String, required: true },
+        position: { type: Number, required: true },
+        eliminatedIn: { type: String, required: true },
+        stats: {
+            matchesWon: { type: Number, default: 0 },
+            matchesLost: { type: Number, default: 0 },
+            legsWon: { type: Number, default: 0 },
+            legsLost: { type: Number, default: 0 },
+            oneEightiesCount: { type: Number, default: 0 },
+            highestCheckout: { type: Number, default: 0 },
+            average: { type: Number, default: 0 }, // Tornához tartozó átlag (meccs átlagok átlaga)
+        },
+        date: { type: Date, default: Date.now },
+        verified: { type: Boolean, default: false }, // Indicates if tournament was verified (OAC)
+        mmrChange: { type: Number },
+    }],
+    // Historical Data & Honors
+    honors: [{
+        title: { type: String, required: true },
+        year: { type: Number, required: true },
+        type: { type: String, enum: ['rank', 'tournament', 'special'], default: 'special' }, // e.g. "Top 1 2025", "3x Winner"
+        description: { type: String }
+    }],
+    previousSeasons: [{
+        year: { type: Number, required: true },
+        stats: {
+            tournamentsPlayed: { type: Number, default: 0 },
+            matchesPlayed: { type: Number, default: 0 },
+            legsWon: { type: Number, default: 0 },
+            legsLost: { type: Number, default: 0 },
+            oneEightiesCount: { type: Number, default: 0 },
+            highestCheckout: { type: Number, default: 0 },
+            avg: { type: Number, default: 0 },
+            averagePosition: { type: Number, default: 0 },
+            bestPosition: { type: Number, default: 999 },
+            totalMatchesWon: { type: Number, default: 0 },
+            totalMatchesLost: { type: Number, default: 0 },
+            totalLegsWon: { type: Number, default: 0 },
+            totalLegsLost: { type: Number, default: 0 },
+            total180s: { type: Number, default: 0 },
+            mmr: { type: Number, default: 800 },
+            oacMmr: { type: Number, default: 800 },
+        },
+        snapshotDate: { type: Date, default: Date.now },
+        tournamentHistory: { type: Array, default: [] }
+    }]
+}, {collection: 'players'});
+
+import { tdartsDb } from '@/lib/tdarts-db';
+
+export const PlayerModel = tdartsDb.models.Player || tdartsDb.model<PlayerDocument>('Player', PlayerSchema);
