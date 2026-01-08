@@ -16,7 +16,8 @@ import {
   X,
   AlertCircle,
   CircleHelp as HelpCircle,
-  Receipt
+  Receipt,
+  FileText
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -111,6 +112,9 @@ export default function ApplicationsPage() {
     } else if (action === 'reject') {
        body.clubId = app.clubId; // Reject logic needs clubId for rollback maybe?
        confirmMsg = `Biztosan elutasítod a(z) ${app.clubName} jelentkezését?`;
+    } else if (action === 'generate-invoice' as any) {
+        endpoint = `/api/admin/applications/generate-invoice`;
+        confirmMsg = `Biztosan kiállítod a számlát a(z) ${app.clubName} részére? Ezzel egyidejűleg kiküldjük az értesítő emailt a PDF számlával.`;
     } else if (action === 'mark-invoiced') {
        body.invoiceNumber = prompt("Add meg a számlaszámot (opcionális):") || undefined;
        confirmMsg = `Biztosan megjelölöd, hogy a számla el lett küldve? A számlázási adatok TÖRLÉSRE kerülnek.`;
@@ -137,7 +141,7 @@ export default function ApplicationsPage() {
 
       toast.success('Művelet sikeres!');
       fetchApplications();
-      if (action === 'mark-invoiced') {
+      if (action === 'mark-invoiced' || action === 'generate-invoice' as any) {
         setBillingModal({ isOpen: false, app: null });
       }
     } catch (err: any) {
@@ -261,70 +265,95 @@ export default function ApplicationsPage() {
                  </CardHeader>
                  <CardContent className="space-y-4">
                      <div className="grid grid-cols-2 gap-4 text-sm">
-                         <div>
-                             <p className="text-muted-foreground font-medium">Fizetési Mód</p>
-                             <Badge variant="outline" className="mt-1">
-                                {billingModal.app.paymentMethod === 'stripe' ? 'Bankkártya (Stripe)' : 'Átutalás'}
-                             </Badge>
-                         </div>
-                         <div>
-                             <p className="text-muted-foreground font-medium">Státusz</p>
-                             <div className="flex gap-2 flex-wrap">
-                                <Badge variant={billingModal.app.paymentStatus === 'paid' ? 'default' : 'secondary'} className="mt-1 bg-success/20 text-success border-success/20">
-                                    {billingModal.app.paymentStatus === 'paid' ? 'Fizetve' : 'Függőben'}
-                                </Badge>
-                                {billingModal.app.invoiceSent && (
-                                     <Badge variant="outline" className="mt-1 border-primary/50 text-primary">
-                                        Számla Küldve {billingModal.app.invoiceNumber ? `(${billingModal.app.invoiceNumber})` : ''}
-                                     </Badge>
-                                )}
-                             </div>
-                         </div>
+                          <div>
+                              <p className="text-muted-foreground font-medium">Fizetési Mód</p>
+                              <Badge variant="outline" className="mt-1">
+                                 {billingModal.app.paymentMethod === 'stripe' ? 'Bankkártya (Stripe)' : 'Átutalás'}
+                              </Badge>
+                          </div>
+                          <div>
+                              <p className="text-muted-foreground font-medium">Státusz</p>
+                              <div className="flex gap-2 flex-wrap">
+                                 <Badge variant={billingModal.app.paymentStatus === 'paid' ? 'default' : 'secondary'} className="mt-1 bg-success/20 text-success border-success/20">
+                                     {billingModal.app.paymentStatus === 'paid' ? 'Fizetve' : 'Függőben'}
+                                 </Badge>
+                                 {billingModal.app.invoiceSent && (
+                                      <Badge variant="outline" className="mt-1 border-primary/50 text-primary">
+                                         Számla Küldve {billingModal.app.invoiceNumber ? `(${billingModal.app.invoiceNumber})` : ''}
+                                      </Badge>
+                                 )}
+                              </div>
+                          </div>
                      </div>
                      <Separator />
                      {billingModal.app.billingName ? (
-                         <div className="space-y-3 text-sm">
-                             <div>
-                                 <p className="text-muted-foreground font-medium text-xs uppercase">Név</p>
-                                 <p className="font-semibold">{billingModal.app.billingName}</p>
-                             </div>
-                             <div>
-                                 <p className="text-muted-foreground font-medium text-xs uppercase">Cím</p>
-                                 <p>{billingModal.app.billingZip} {billingModal.app.billingCity}, {billingModal.app.billingAddress}</p>
-                             </div>
-                             <div>
-                                 <p className="text-muted-foreground font-medium text-xs uppercase">Adószám</p>
-                                 <p className="font-mono">{billingModal.app.billingTaxNumber || '-'}</p>
-                             </div>
-                             <div>
-                                 <p className="text-muted-foreground font-medium text-xs uppercase">Email</p>
-                                 <p>{billingModal.app.billingEmail || '-'}</p>
-                             </div>
-                         </div>
-                     ) : (
-                         <div className="py-4 text-center text-muted-foreground bg-muted/20 rounded-lg">
-                             <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                             <p>A számlázási adatok törlésre kerültek.</p>
-                             <div className="text-xs mt-1">(Adatvédelmi okokból, számlakiállítás után a rendszer törli az adatokat)</div>
-                         </div>
-                     )}
+                          <div className="space-y-3 text-sm">
+                              <div>
+                                  <p className="text-muted-foreground font-medium text-xs uppercase">Név</p>
+                                  <p className="font-semibold">{billingModal.app.billingName}</p>
+                              </div>
+                              <div>
+                                  <p className="text-muted-foreground font-medium text-xs uppercase">Cím</p>
+                                  <p>{billingModal.app.billingZip} {billingModal.app.billingCity}, {billingModal.app.billingAddress}</p>
+                              </div>
+                              <div>
+                                  <p className="text-muted-foreground font-medium text-xs uppercase">Adószám</p>
+                                  <p className="font-mono">{billingModal.app.billingTaxNumber || '-'}</p>
+                              </div>
+                              <div>
+                                  <p className="text-muted-foreground font-medium text-xs uppercase">Email</p>
+                                  <p>{billingModal.app.billingEmail || '-'}</p>
+                              </div>
+                          </div>
+                      ) : (
+                          <div className="py-4 text-center text-muted-foreground bg-muted/20 rounded-lg">
+                              <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p>A számlázási adatok törlésre kerültek.</p>
+                              <div className="text-xs mt-1">(Adatvédelmi okokból, számlakiállítás után a rendszer törli az adatokat)</div>
+                          </div>
+                      )}
                  </CardContent>
                  {(billingModal.app.status === 'approved' || billingModal.app.status === 'submitted') && !billingModal.app.invoiceSent && billingModal.app.billingName && (
-                     <CardFooter className="pt-2 border-t bg-muted/10 block">
-                         <div className="w-full space-y-2">
-                            <p className="text-xs text-muted-foreground mb-2">Számla kezelése (ha automatikusan nem sikerült):</p>
-                             <Button 
-                                variant="secondary" 
-                                className="w-full gap-2"
-                                onClick={() => handleAction('mark-invoiced', billingModal.app!)}
+                      <CardFooter className="pt-2 border-t bg-muted/10 block">
+                          <div className="w-full space-y-2">
+                             <p className="text-xs text-muted-foreground mb-2">Számla kezelése (ha automatikusan nem sikerült):</p>
+                             <div className="grid grid-cols-1 gap-2">
+                                <Button 
+                                    className="w-full gap-2 bg-success hover:bg-success/90"
+                                    onClick={() => handleAction('generate-invoice' as any, billingModal.app!)}
+                                    disabled={!!processing}
+                                >
+                                    <Receipt className="h-4 w-4" />
+                                    Hivatalos Számla Kiállítása
+                                </Button>
+                                <Button 
+                                    variant="secondary" 
+                                    className="w-full gap-2"
+                                    onClick={() => handleAction('mark-invoiced', billingModal.app!)}
+                                    disabled={!!processing}
+                                >
+                                    <CheckCircle2 className="h-4 w-4" />
+                                    Manuálisan számláztam, adatok törlése
+                                </Button>
+                             </div>
+                          </div>
+                      </CardFooter>
+                  )}
+                  {billingModal.app.invoiceNumber && (
+                    <CardFooter className="pt-2 border-t bg-primary/5 block">
+                         <div className="w-full">
+                            <Button 
+                                variant="outline" 
+                                className="w-full gap-2 border-primary/50 text-primary hover:bg-primary/10"
+                                onClick={() => window.open(`/api/applications/invoice?applicationId=${billingModal.app!._id}`, '_blank')}
                                 disabled={!!processing}
-                             >
-                                <CheckCircle2 className="h-4 w-4" />
-                                Manuálisan számláztam, adatok törlése
-                             </Button>
+                            >
+                                <FileText className="h-4 w-4" />
+                                Számla Letöltése ({billingModal.app.invoiceNumber})
+                            </Button>
                          </div>
-                     </CardFooter>
-                 )}
+                    </CardFooter>
+                  )}
              </Card>
         </div>
       )}

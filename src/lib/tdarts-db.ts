@@ -38,18 +38,17 @@ if (process.env.NODE_ENV === 'production') {
   tdartsDb = global.tdartsConn;
 }
 
-// Listeners (only attach once if possible, but hard to track in global ref. Mongoose handles it okay)
-// We can check readyState
-if (tdartsDb.readyState === 0) {
-    // It's connecting...
+// Listeners
+if (tdartsDb.listenerCount('connected') === 0) {
+  tdartsDb.on('connected', () => {
+    // console.log(`[tDarts DB] Connected to ${TDARTS_DB_NAME}`);
+  });
 }
 
-tdartsDb.on('connected', () => {
-  // console.log(`[tDarts DB] Connected to ${TDARTS_DB_NAME}`);
-});
-
-tdartsDb.on('error', (err) => {
-  console.error(`[tDarts DB] Connection error:`, err);
-});
+if (tdartsDb.listenerCount('error') === 0) {
+  tdartsDb.on('error', (err) => {
+    console.error(`[tDarts DB] Connection error:`, err);
+  });
+}
 
 export { tdartsDb };

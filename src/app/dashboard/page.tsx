@@ -3,7 +3,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Building2, CheckCircle2, Clock, AlertCircle, Trophy, Loader2, ArrowLeft, ExternalLink, Plus, LayoutDashboard } from "lucide-react";
+import { Building2, CheckCircle2, Clock, AlertCircle, Trophy, Loader2, ArrowLeft, ExternalLink, Plus, LayoutDashboard, FileText } from "lucide-react";
 import CreateClubModal from "@/components/CreateClubModal";
 import ApplicationModal from "@/components/ApplicationModal";
 import { toast } from "react-hot-toast";
@@ -29,6 +29,7 @@ interface Application {
   transferReference?: string;
   paymentMethod?: 'stripe' | 'transfer';
   paymentStatus?: 'pending' | 'paid' | 'failed';
+  invoiceNumber?: string;
 }
 
 function DashboardContent() {
@@ -77,7 +78,8 @@ function DashboardContent() {
           throw new Error("Klubok lekérése sikertelen");
         }
         const clubsData = await clubsResponse.json();
-        setClubs(clubsData.clubs || []);
+        const enrichedClubs = Array.isArray(clubsData) ? clubsData : (clubsData.clubs || []);
+        setClubs(enrichedClubs);
 
         // Fetch user's applications
         const appsResponse = await fetch("/api/applications");
@@ -220,12 +222,32 @@ function DashboardContent() {
                 </div>
            </div>
            
-           <Button variant="outline" asChild className="gap-2">
-                <a href="https://tdarts.sironic.hu" target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4" />
-                    tDarts Platform
-                </a>
-           </Button>
+           <div className="flex items-center gap-3">
+               <Button variant="outline" asChild className="gap-2">
+                    <a href="https://tdarts.sironic.hu" target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4" />
+                        tDarts Platform
+                    </a>
+               </Button>
+               <Button 
+                   variant="ghost" 
+                   className="gap-2 text-muted-foreground hover:text-destructive"
+                   onClick={async () => {
+                       try {
+                           const res = await fetch('/api/logout', { method: 'POST' });
+                           if (res.ok) {
+                               toast.success('Sikeres kijelentkezés');
+                               window.location.href = '/login';
+                           }
+                       } catch (e) {
+                           toast.error('Hiba a kijelentkezés során');
+                       }
+                   }}
+               >
+                   <ArrowLeft className="h-4 w-4" />
+                   Kijelentkezés
+               </Button>
+           </div>
         </div>
 
         <Separator />
@@ -237,10 +259,12 @@ function DashboardContent() {
               <Building2 className="h-5 w-5 text-primary" />
               Klubjaim
             </h2>
-            <Button onClick={() => setShowCreateClub(true)} variant="outline" size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Új Klub
-            </Button>
+            {(clubs.length === 0 && applications.length === 0) && (
+              <Button onClick={() => setShowCreateClub(true)} variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Új Klub
+              </Button>
+            )}
           </div>
 
           {clubs.length > 0 ? (
@@ -274,18 +298,24 @@ function DashboardContent() {
                     </CardHeader>
                     <CardContent>
                        <div className="text-sm">
-                           {hasApplication ? (
+                           {(hasApplication || club.verified) ? (
                                <div className="space-y-3 p-3 rounded-lg bg-muted/50 border border-border/50">
                                    <div className="flex justify-between items-center">
                                        <span className="text-muted-foreground">Státusz</span>
-                                       {getStatusBadge(application!.status)}
+                                       {getStatusBadge(application?.status || (club.verified ? 'approved' : 'pending'))}
                                    </div>
-                                   <div className="flex justify-between items-center text-xs text-muted-foreground">
-                                       <span>Beküldve</span>
-                                       <span>{new Date(application!.submittedAt).toLocaleDateString('hu-HU')}</span>
-                                    </div>
+                                   {application ? (
+                                       <div className="flex justify-between items-center text-xs text-muted-foreground">
+                                           <span>Beküldve</span>
+                                           <span>{new Date(application.submittedAt).toLocaleDateString('hu-HU')}</span>
+                                        </div>
+                                   ) : (
+                                       <div className="text-xs text-muted-foreground italic">
+                                           Batch-importált / Manuálisan verifikált
+                                       </div>
+                                   )}
                                     
-                                    {application!.paymentMethod === 'transfer' && application!.paymentStatus === 'pending' && application!.transferReference && (
+                                    {application?.paymentMethod === 'transfer' && application?.paymentStatus === 'pending' && application?.transferReference && (
                                        <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md text-xs space-y-2">
                                            <div className="font-semibold text-blue-800 flex items-center gap-2">
                                              <AlertCircle className="h-4 w-4" />
@@ -294,7 +324,7 @@ function DashboardContent() {
                                            <div className="space-y-1 text-blue-900 border-l-2 border-blue-300 pl-2">
                                               <p>Bank: <span className="font-semibold">{process.env.NEXT_PUBLIC_BANK_NAME || 'OTP Bank'}</span></p>
                                               <p>Számlaszám: <span className="font-mono font-bold">{process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || '11700000-00000000'}</span></p>
-                                              <p>Összeg: <span className="font-bold">{new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(Number(process.env.NEXT_PUBLIC_CLUB_APPLICATION_PRICE_GROSS || 25000))}</span></p>
+                                              <p>Összeg: <span className="font-bold">{new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(Number(process.env.NEXT_PUBLIC_CLUB_APPLICATION_PRICE_NET || 20000))}</span></p>
                                            </div>
                                            <div className="bg-white p-3 rounded border border-blue-200 text-center shadow-sm">
                                               <div className="text-[10px] uppercase text-muted-foreground font-bold mb-1">Közleménybe írandó Kód</div>
@@ -312,16 +342,16 @@ function DashboardContent() {
                        </div>
                     </CardContent>
                     <CardFooter className="pt-0">
-                        {hasApplication ? (
-                             application!.status === 'approved' && (
+                        {(hasApplication || club.verified) ? (
+                             (application?.status === 'approved' || club.verified) && (
                                 <Button 
                                     variant="destructive" 
                                     size="sm" 
                                     className="w-full"
-                                    onClick={() => handleRequestRemoval(application!._id)}
-                                    disabled={applyingFor === application!._id}
+                                    onClick={() => application ? handleRequestRemoval(application._id) : toast.error('Ez a klub manuálisan lett hozzáadva, kérlek keress minket az eltávolításhoz.')}
+                                    disabled={applyingFor === application?._id}
                                 >
-                                     {applyingFor === application!._id ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <AlertCircle className="h-4 w-4 mr-2" />}
+                                     {applyingFor === application?._id ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <AlertCircle className="h-4 w-4 mr-2" />}
                                      Eltávolítás kérése
                                 </Button>
                              )
@@ -395,7 +425,20 @@ function DashboardContent() {
               Jelentkezéseim
             </h2>
             <div className="space-y-4">
-              {applications.map((app) => (
+              {/* Combine local applications and verified clubs that don't have a local application */}
+              {[
+                ...applications,
+                ...clubs
+                  .filter(c => c.verified && !applications.some(a => a.clubId === c._id))
+                  .map(c => ({
+                    _id: `v-${c._id}`,
+                    clubId: c._id,
+                    clubName: c.name,
+                    status: 'approved' as const,
+                    submittedAt: new Date().toISOString(), // Fallback
+                    isVirtual: true
+                  }))
+              ].map((app) => (
                 <Card key={app._id}>
                     <CardContent className="flex items-center justify-between p-6">
                         <div className="flex items-center gap-4">
@@ -405,19 +448,93 @@ function DashboardContent() {
                              <div>
                                 <h3 className="font-semibold">{app.clubName}</h3>
                                 <div className="text-sm text-muted-foreground">
-                                    Beküldve: {new Date(app.submittedAt).toLocaleDateString('hu-HU', {
+                                    {('isVirtual' in app) ? 'Manuálisan verifikálva' : `Beküldve: ${new Date(app.submittedAt).toLocaleDateString('hu-HU', {
                                         year: 'numeric',
                                         month: 'long',
                                         day: 'numeric'
-                                    })}
+                                    })}`}
                                 </div>
                              </div>
                         </div>
-                        {getStatusBadge(app.status)}
+                        <div className="flex items-center gap-3">
+                            {('invoiceNumber' in app && app.invoiceNumber) && (
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="gap-2 border-primary/40 text-primary hover:bg-primary/5"
+                                    onClick={() => window.open(`/api/applications/invoice?applicationId=${app._id}`, '_blank')}
+                                >
+                                    <FileText className="h-4 w-4 text-primary" />
+                                    Számla
+                                </Button>
+                            )}
+                            {getStatusBadge(app.status)}
+                        </div>
                     </CardContent>
                 </Card>
               ))}
             </div>
+          </div>
+        )}
+
+       
+
+        {/* Contact & Support Section (Visible if approved or verified) */}
+        {(applications.some(app => app.status === 'approved') || clubs.some(club => club.verified)) ? (
+          <div id="support" className="space-y-6 animate-in slide-in-from-bottom duration-700">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-primary" />
+              Kapcsolat és Támogatás
+            </h2>
+            <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="p-6">
+                    <div className="grid gap-6 md:grid-cols-2">
+                        <div className="space-y-3">
+                            <h3 className="font-semibold flex items-center gap-2">
+                                <FileText className="h-4 w-4 text-primary" />
+                                Technikai Segítség
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                Bármilyen technikai probléma vagy a platform használatával kapcsolatos kérdés esetén fordulj hozzánk bizalommal.
+                            </p>
+                            <div className="flex flex-col gap-2 pt-2">
+                                <a href="mailto:toth.tamas@sironic.hu" className="text-sm font-medium text-primary hover:underline flex items-center gap-2">
+                                    toth.tamas@sironic.hu
+                                </a>
+                                <a href="tel:06306024666" className="text-sm font-medium text-primary hover:underline flex items-center gap-2">
+                                    Technikai telefon:+36 30 602 4666
+                                </a>
+                                <a href="/how-it-works" className="text-sm font-medium text-primary hover:underline flex items-center gap-2">
+                                    Hogyan működik? útmutató
+                                </a>
+                            </div>
+                        </div>
+                        <div className="space-y-3">
+                            <h3 className="font-semibold flex items-center gap-2">
+                                <Trophy className="h-4 w-4 text-primary" />
+                                Versenyszervezés
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                A Nemzeti Liga versenyeivel, szabályzatával vagy pontozással kapcsolatos kérdésekben az OAC delegáltjai segítenek.
+                            </p>
+                            <div className="flex flex-col gap-2 pt-2">
+                                <a href="mailto:office@magyardarts.hu" className="text-sm font-medium text-primary hover:underline flex items-center gap-2">
+                                    office@magyardarts.hu
+                                </a>
+                                <a href="https://amator.tdarts.hu/szabalyzat" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary hover:underline flex items-center gap-2">
+                                    Versenyszabályzat megtekintése
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div id="support" className="p-8 text-center border-2 border-dashed rounded-xl bg-muted/20">
+            <p className="text-muted-foreground font-medium">
+              Támogatási lehetőség és elérési információk jóváhagyott jelentkezés után elérhetőek
+            </p>
           </div>
         )}
 

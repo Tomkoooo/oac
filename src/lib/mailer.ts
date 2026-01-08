@@ -18,18 +18,28 @@ export const sendEmail = async ({
   subject,
   text,
   html,
+  attachments,
 }: {
   to: string;
   subject: string;
   text?: string;
   html?: string;
+  attachments?: any[];
 }) => {
-  const info = await transporter.sendMail({
-    from: process.env.EMAIL_FROM || '"OAC Admin" <admin@tdarts.hu>',
-    to,
-    subject,
-    text,
-    html,
-  });
-  return info;
+  try {
+    console.log(`[Mailer] Sending email to: ${to}, Subject: ${subject}`);
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_FROM || '"OAC Admin" <noreply@tdarts.hu>',
+      to,
+      subject,
+      text,
+      html,
+      attachments,
+    });
+    console.log(`[Mailer] Email sent successfully. MessageId: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[Mailer] Error sending email to ${to}:`, error);
+    throw error;
+  }
 };

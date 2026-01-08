@@ -24,10 +24,25 @@ export async function GET() {
     }
 
     // Fetch user's clubs from database
+    console.log('Fetching clubs for user:', userId);
     const { getUserClubs } = await import('@/lib/tdarts-data');
-    const clubs = await getUserClubs(userId);
+    const rawClubs = await getUserClubs(userId);
+    
+    // Enrich with role
+    const clubs = rawClubs.map((club: any) => {
+        let role = 'member';
+        if (club.admin && club.admin.some((id: any) => id.toString() === userId)) {
+            role = 'admin';
+        } else if (club.moderators && club.moderators.some((id: any) => id.toString() === userId)) {
+            role = 'moderator';
+        }
+        return {
+            ...club,
+            role
+        };
+    });
 
-    return NextResponse.json(clubs);
+    return NextResponse.json({ clubs });
   } catch (error: any) {
     console.error('Fetch clubs error:', error.message);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });

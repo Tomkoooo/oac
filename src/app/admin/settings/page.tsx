@@ -41,7 +41,10 @@ export default function SettingsPage() {
   const [emailTemplates, setEmailTemplates] = useState({
     applicationReceived: 'Köszönjük az OAC jelentkezését! Hamarosan feldolgozzuk és értesítjük a döntésről.',
     applicationApproved: 'Gratulálunk! Az OAC jelentkezése jóváhagyva. A ligája aktiválva lett.',
-    applicationRejected: 'Sajnálattal értesítjük, hogy az OAC jelentkezését elutasítottuk.'
+    applicationRejected: 'Sajnálattal értesítjük, hogy az OAC jelentkezését elutasítottuk.',
+    bankTransferInstructions: 'A regisztráció véglegesítéséhez kérjük utald át az éves tagsági díjat.',
+    stripePaymentSuccess: 'Sikeres fizetés! Mellékelten küldjük az elektronikus számlát.',
+    applicationRemoval: 'Az OAC jelentkezése törlésre került.'
   });
 
   const [rules, setRules] = useState<any>(null);
@@ -154,6 +157,9 @@ export default function SettingsPage() {
           case 'applicationReceived': return 'Jelentkezés Beérkezett';
           case 'applicationApproved': return 'Jóváhagyási Értesítő';
           case 'applicationRejected': return 'Elutasítási Értesítő';
+          case 'bankTransferInstructions': return 'Utalási Információk';
+          case 'stripePaymentSuccess': return 'Sikeres Kártyás Fizetés';
+          case 'applicationRemoval': return 'Jelentkezés Törlése';
           default: return key;
       }
   };

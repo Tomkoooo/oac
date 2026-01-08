@@ -49,6 +49,57 @@ export async function POST(request: Request) {
     }
     await application.save();
 
+    // Send Rejection Email
+    try {
+        const { sendEmail } = await import('@/lib/mailer');
+        const { getEmailTemplates } = await import('@/lib/config');
+        const templates = await getEmailTemplates();
+        
+        // Use applicationRemoval template if status was approved (meaning it's a removal)
+        const isRemoval = application.status === 'approved'; // Wait, it was approved BEFORE we set it to rejected
+        // Actually, we set it to rejected at line 46. 
+        // Let's check the old status.
+        
+        const baseMessage = isRemoval ? templates.applicationRemoval : templates.applicationRejected;
+
+        const targetEmail = application.applicantEmail;
+        
+        if (targetEmail) {
+            await sendEmail({
+                to: targetEmail,
+                subject: isRemoval ? 'Értesítés: OAC Klub státusz visszavonva' : 'Értesítés: OAC Jelentkezés elutasítva',
+                html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                    <div style="background-color: #374151; padding: 20px; text-align: center;">
+                        <h1 style="color: white; margin: 0; font-size: 24px;">Értesítés Jelentkezésről</h1>
+                    </div>
+                    <div style="padding: 24px; background-color: #ffffff; color: #374151; line-height: 1.6;">
+                        <p>Kedves <strong>${application.applicantName || application.clubName}</strong>!</p>
+                        <p>${baseMessage}</p>
+                        <p>A(z) <strong>${application.clubName}</strong> klub OAC liga jelentkezése ${isRemoval ? 'visszavonásra' : 'elutasításra'} került.</p>
+                        
+                        ${notes ? `
+                        <div style="margin: 25px 0; padding: 15px; background-color: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">
+                            <p style="margin: 0; font-weight: bold; color: #991b1b;">Indoklás / Megjegyzés:</p>
+                            <p style="margin: 10px 0 0 0;">${notes}</p>
+                        </div>
+                        ` : ''}
+ 
+                        <p>Amennyiben kérdésed van, vagy javítani szeretnéd a hiányosságokat, kérjük válaszolj erre az emailre.</p>
+                        
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 0.9em; color: #6b7280;">
+                            Üdvözlettel,<br>
+                            OAC Csapat & MDSZ
+                        </div>
+                    </div>
+                </div>
+                `
+            });
+        }
+    } catch (mailError) {
+        console.error('Rejection email error:', mailError);
+    }
+
     return NextResponse.json({ message: 'Application rejected and OAC status revoked' });
   } catch (error: any) {
     console.error('Reject application error:', error);

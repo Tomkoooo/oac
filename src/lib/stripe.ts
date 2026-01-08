@@ -10,9 +10,9 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 export const getStripePrice = () => {
-  const price = parseInt(process.env.CLUB_APPLICATION_PRICE_GROSS || '0', 10);
+  const price = parseInt(process.env.CLUB_APPLICATION_PRICE_NET || '0', 10);
   if (isNaN(price) || price <= 0) {
-    throw new Error('Invalid CLUB_APPLICATION_PRICE_GROSS');
+    throw new Error('Invalid CLUB_APPLICATION_PRICE_NET');
   }
   return price;
 };

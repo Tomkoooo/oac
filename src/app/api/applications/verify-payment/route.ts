@@ -70,7 +70,7 @@ export async function POST(req: Request) {
                taxNumber: application.billingTaxNumber,
                email: application.billingEmail,
                paymentMethod: 'stripe',
-               amount: amount > 0 ? amount : parseInt(process.env.CLUB_APPLICATION_PRICE_GROSS || '0'),
+               amount: amount > 0 ? amount : parseInt(process.env.CLUB_APPLICATION_PRICE_NET || '0'),
                isPaid: true,
                comment: `Stripe Payment Verified: ${session.id}`
             });

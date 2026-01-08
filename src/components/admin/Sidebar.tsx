@@ -116,7 +116,15 @@ export function Sidebar({ className }: SidebarProps) {
          <Button 
              variant="ghost" 
              className="w-full justify-start gap-2 mt-2 text-muted-foreground hover:text-destructive" 
-             onClick={() => import("next-auth/react").then(({ signOut }) => signOut({ callbackUrl: "/auth/login" }))}
+             onClick={async () => {
+                 try {
+                     await fetch('/api/logout', { method: 'POST' });
+                 } catch (e) {
+                     console.error('Logout error', e);
+                 }
+                 const { signOut } = await import("next-auth/react");
+                 signOut({ callbackUrl: "/auth/login" });
+             }}
          >
              <ChevronLeft className="h-4 w-4" />
              Kijelentkezés

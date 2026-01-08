@@ -479,7 +479,14 @@ export const createOacLeague = async (clubId: string, creatorId: string, name: s
       isActive: true
     });
 
-    await league.save();
+    try {
+      console.log(`[tdarts-data] Attempting to save league for club ${clubId}...`);
+      await league.save();
+      console.log(`[tdarts-data] League saved successfully: ${league._id}`);
+    } catch (saveError: any) {
+      console.error(`[tdarts-data] FATAL: league.save() failed:`, saveError);
+      throw saveError;
+    }
 
     // Verify Club
     const updatedClub = await ClubModel.findByIdAndUpdate(

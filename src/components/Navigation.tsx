@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { IconLogout, IconUser } from "@tabler/icons-react";
+import { IconLogout, IconPhoneCall, IconUser } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
@@ -21,8 +21,8 @@ export default function Navigation() {
 
       if (response.ok) {
         toast.success("Sikeresen kijelentkeztél");
-        logout(); // Update context
-        router.push("/");
+        if (logout) logout(); // Update context
+        window.location.href = "/";
       } else {
         toast.error("Kijelentkezés sikertelen");
       }
@@ -70,7 +70,13 @@ export default function Navigation() {
                     Dashboard
                 </Link>
               </Button>
-              <Button 
+              <Button asChild variant="secondary" size="sm" className="shadow-lg shadow-primary/20">
+                <Link href="/dashboard#support" className="gap-2">
+                    <IconPhoneCall className="w-4 h-4" />
+                    Kapcsolat
+                </Link>
+              </Button>
+               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={handleLogout}
