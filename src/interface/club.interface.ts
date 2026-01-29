@@ -70,5 +70,34 @@ export interface ClubDocument extends Document, Omit<Club, '_id' | 'members' | '
   members: Types.ObjectId[]; // Player ref
   admin: Types.ObjectId[]; // User ref
   moderators: Types.ObjectId[]; // User ref
-  toJSON: () => Club;
+  tournamentPlayers?: Array<{
+    name: string;
+  }>;
+  landingPage?: {
+    primaryColor?: string;
+    secondaryColor?: string;
+    backgroundColor?: string;
+    foregroundColor?: string;
+    cardColor?: string;
+    cardForegroundColor?: string;
+    logo?: string;
+    coverImage?: string;
+    aboutText?: string;
+    aboutImages?: string[];
+    gallery?: string[];
+    template?: 'classic' | 'modern';
+    showMembers?: boolean;
+    showTournaments?: boolean;
+    seo?: {
+      title?: string;
+      description?: string;
+      keywords?: string;
+    };
+  };
+  contact: {
+    email?: string;
+    phone?: string;
+    website?: string;
+  };
+  updatedAt: Date;
 }

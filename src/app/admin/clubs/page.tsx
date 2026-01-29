@@ -29,6 +29,7 @@ export default function AdminClubsPage() {
   const [clubs, setClubs] = useState<Club[]>([]);
   const [stats, setStats] = useState({ total: 0, verified: 0, unverified: 0 });
   const [loading, setLoading] = useState(true);
+  const [historicalData, setHistoricalData] = useState<any[]>([]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -38,6 +39,7 @@ export default function AdminClubsPage() {
 
   useEffect(() => {
     fetchClubs();
+    fetchHistoricalData();
   }, []);
 
   const fetchClubs = async () => {
@@ -59,17 +61,32 @@ export default function AdminClubsPage() {
     }
   };
 
+  const fetchHistoricalData = async () => {
+    try {
+      const response = await fetch('/api/admin/stats/snapshot?days=90');
+      if (response.ok) {
+        const data = await response.json();
+        setHistoricalData(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching historical data:', error);
+    }
+  };
 
   // OAC Portal shows only verified clubs
   const filteredClubs = clubs;
 
-  // Simple mock telemetry data (in production, this would come from historical data)
-  const telemetryData = [
-    { all: Math.floor(stats.total * 0.7), verified: Math.floor(stats.verified * 0.7), unverified: Math.floor(stats.unverified * 0.7), label: '3 hónappal ezelőtt' },
-    { all: Math.floor(stats.total * 0.85), verified: Math.floor(stats.verified * 0.85), unverified: Math.floor(stats.unverified * 0.85), label: '2 hónappal ezelőtt' },
-    { all: Math.floor(stats.total * 0.92), verified: Math.floor(stats.verified * 0.92), unverified: Math.floor(stats.unverified * 0.92), label: '1 hónappal ezelőtt' },
-    { all: stats.total, verified: stats.verified, unverified: stats.unverified, label: 'Most' },
-  ];
+  // Format historical data for telemetry chart
+  const telemetryData = historicalData.length > 0 
+    ? historicalData.slice(-4).map((snapshot: any) => ({
+        all: snapshot.clubs.total,
+        verified: snapshot.clubs.verified,
+        unverified: snapshot.clubs.unverified,
+        label: new Date(snapshot.date).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' })
+      }))
+    : [
+        { all: stats.total, verified: stats.verified, unverified: stats.unverified, label: 'Jelenlegi' }
+      ];
 
   if (status === "loading" || loading) {
     return (

@@ -21,7 +21,7 @@ const tournamentSchema = new mongoose.Schema<TournamentDocument>({
         }
     },
     clubId: { type: mongoose.Schema.Types.ObjectId, ref: 'Club', required: true },
-    league: { type: mongoose.Schema.Types.ObjectId, ref: 'League', required: false },
+    league: { type: mongoose.Schema.Types.ObjectId, ref: 'LeagueOac', required: false },
     tournamentPlayers: [{
         playerReference: { type: mongoose.Schema.Types.ObjectId, ref: 'Player', required: true },
         status: { type: String, enum: ['applied', 'confirmed', 'checked-in', 'eliminated', 'winner'], required: true, default: 'applied' },

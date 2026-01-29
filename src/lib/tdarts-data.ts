@@ -103,8 +103,21 @@ export const getVerifiedClubs = async () => {
       }
     ]);
 
+    const serializedClubs = clubs.map((club: any) => ({
+      ...club,
+      _id: club._id.toString(),
+      members: club.members?.map((m: any) => m.toString()) || [],
+      admin: club.admin?.map((a: any) => a.toString()) || [],
+      moderators: club.moderators?.map((m: any) => m.toString()) || [],
+      tournaments: club.tournaments?.map((t: any) => ({
+        ...t,
+        _id: t._id.toString(),
+        clubId: t.clubId?.toString()
+      })) || []
+    }));
+
     return {
-      clubs,
+      clubs: serializedClubs,
       stats: {
         total: clubs.length,
         verified: clubs.length,
@@ -120,64 +133,122 @@ export const getVerifiedLeagues = async () => {
         .sort({ createdAt: -1 })
         .lean();
     
+    const serializedLeagues = leagues.map((league: any) => {
+        try {
+            return {
+                ...league,
+                _id: league._id?.toString(),
+                club: league.club ? {
+                    ...league.club,
+                    _id: league.club._id?.toString()
+                } : undefined,
+                createdBy: league.createdBy?.toString(),
+                attachedTournaments: league.attachedTournaments?.map((t: any) => 
+                    typeof t === 'object' && t._id ? t._id.toString() : t?.toString()
+                ) || [],
+                players: league.players?.map((p: any) => ({
+                    ...p,
+                    player: p.player?.toString(),
+                    tournamentPoints: p.tournamentPoints?.map((tp: any) => ({
+                        ...tp,
+                        tournament: tp.tournament?.toString()
+                    })) || [],
+                    manualAdjustments: p.manualAdjustments?.map((ma: any) => ({
+                        ...ma,
+                        adjustedBy: ma.adjustedBy?.toString()
+                    })) || []
+                })) || [],
+                removedPlayers: league.removedPlayers?.map((rp: any) => ({
+                    ...rp,
+                    player: rp.player?.toString(),
+                    removedBy: rp.removedBy?.toString(),
+                    tournamentPoints: rp.tournamentPoints?.map((tp: any) => ({
+                        ...tp,
+                        tournament: tp.tournament?.toString()
+                    })) || [],
+                    manualAdjustments: rp.manualAdjustments?.map((ma: any) => ({
+                        ...ma,
+                        adjustedBy: ma.adjustedBy?.toString()
+                    })) || []
+                })) || []
+            };
+        } catch (e) {
+            console.error('Error serializing league:', league._id, e);
+            return null;
+        }
+    }).filter(Boolean);
+    
     // Transform to match expected interface if needed, or return as is
-    return { leagues };
+    return { leagues: serializedLeagues };
 };
 
 export const getVerifiedTournaments = async (limit = 50, skip = 0, status?: string, leagueId?: string) => {
     await ensureDb();
-    
-    // Find verified leagues
-    const verifiedLeagues = await LeagueModel.find({ verified: true }).select('_id');
-    const verifiedLeagueIds = verifiedLeagues.map(l => l._id);
 
-    // Build query
-    const query: any = {
-      isDeleted: false,
-      isCancelled: false,
-      isSandbox: { $ne: true },
-      $or: [
-        { league: { $in: verifiedLeagueIds } },
-        { verified: true }
-      ]
-    };
+    try {
+        const query = {
+            verified: true,
+            isDeleted: { $ne: true },
+            isCancelled: { $ne: true }
+        };
+        console.log('[getVerifiedTournaments] Query:', query);
+        
+        const tournaments = await TournamentModel.find(query)
+          .populate('clubId', 'name location')
+          .populate('league', 'name verified')
+          .sort({ 'tournamentSettings.startDate': -1 })
+          .limit(limit)
+          .skip(skip)
+          .lean();
 
-    if (status) query['tournamentSettings.status'] = status;
-    if (leagueId) query.league = leagueId;
+        console.log(`[getVerifiedTournaments] Found ${tournaments.length} raw tournaments`);
 
-    const tournaments = await TournamentModel.find(query)
-      .select('tournamentId tournamentSettings clubId league tournamentPlayers verified')
-      .populate('clubId', 'name location')
-      .populate('league', 'name verified')
-      .sort({ 'tournamentSettings.startDate': -1 })
-      .limit(limit)
-      .skip(skip)
-      .lean();
+        const total = await TournamentModel.countDocuments(query);
 
-    const total = await TournamentModel.countDocuments(query);
+        const serializedTournaments = tournaments.map((t: any) => {
+            try {
+                return {
+                    _id: t._id?.toString(),
+                    tournamentId: t.tournamentId,
+                    name: t.tournamentSettings?.name,
+                    startDate: t.tournamentSettings?.startDate,
+                    status: t.tournamentSettings?.status,
+                    location: t.tournamentSettings?.location,
+                    club: (t.clubId && t.clubId._id) ? {
+                        ...t.clubId,
+                        _id: t.clubId._id.toString()
+                    } : undefined,
+                    league: (t.league && t.league._id) ? {
+                        ...t.league,
+                        _id: t.league._id.toString()
+                    } : undefined,
+                    verified: t.verified || false,
+                    playerCount: t.tournamentPlayers?.length || 0,
+                    tournamentSettings: t.tournamentSettings
+                };
+            } catch (err) {
+                console.error('[getVerifiedTournaments] Serialization Error for tournament:', t._id, err);
+                return null;
+            }
+        }).filter(Boolean);
 
-    return {
-      tournaments: tournaments.map((t: any) => ({
-          _id: t._id,
-          tournamentId: t.tournamentId,
-          name: t.tournamentSettings?.name,
-          startDate: t.tournamentSettings?.startDate,
-          status: t.tournamentSettings?.status,
-          location: t.tournamentSettings?.location,
-          club: t.clubId,
-          league: t.league,
-          verified: t.verified || false,
-          playerCount: t.tournamentPlayers?.length || 0,
-      })),
-      total,
-      limit,
-      skip
-    };
+        return {
+          tournaments: serializedTournaments,
+          total,
+          limit,
+          skip
+        };
+    } catch (error) {
+        console.error('[getVerifiedTournaments] Fatal Error:', error);
+        return { tournaments: [], total: 0, limit, skip };
+    }
 };
 
 export const getOacRankings = async (limit = 20, skip = 0, search = '') => {
     await ensureDb();
     
+    // ... rest of function ... (just needed to close the previous block for context if needed, but keeping scope tight)
+    // Actually, I need to match the StartLine with valid context.
     const pipeline: any[] = [
       {
         $match: {
@@ -240,7 +311,39 @@ export const getOacRankings = async (limit = 20, skip = 0, search = '') => {
 
     const rankings = await TournamentModel.aggregate(pipeline);
 
-    return { rankings, total };
+    const serializedRankings = rankings.map((r: any) => ({
+        ...r,
+        _id: r._id?.toString()
+    }));
+
+    return { rankings: serializedRankings, total };
+};
+
+export const getPublicRankings = async () => {
+    await ensureDb();
+    
+    // Fetch all players with oacMmr != 800 (default)
+    // Assuming 800 is the default unranked value as per Player schema
+    
+    const players = await PlayerModel.find({
+        'stats.oacMmr': { $ne: 800 },
+        isRegistered: true // Only list registered players? Usually rankings are for verified players
+        // Based on user request "all players that has a not 800 oacMMr"
+    })
+    .select('name stats.oacMmr stats.avg stats.highestCheckout stats.oneEightiesCount stats.tournamentsPlayed')
+    .sort({ 'stats.oacMmr': -1 })
+    .lean();
+    
+    // Serialize
+    return players.map((p: any) => ({
+        _id: p._id.toString(),
+        name: p.name,
+        oacMmr: p.stats?.oacMmr || 800,
+        avg: p.stats?.avg || 0,
+        maxCheckout: p.stats?.highestCheckout || 0,
+        total180s: p.stats?.oneEightiesCount || 0,
+        tournamentsPlayed: p.stats?.tournamentsPlayed || 0
+    }));
 };
 
 // Growth Data Helper
@@ -314,21 +417,32 @@ export const getOacStats = async () => {
         level: { $ne: 'error' } 
     }).sort({ timestamp: -1 }).limit(20).lean();
 
-    // 6. Pending Applications (Using ClubModel if applicatons stored there? No, usually in OAC local DB, but here we query tDarts Clubs that are NOT verified but might be pending? 
-    // Actually the tDarts integration endpoint returned clubs with verified:false.
-    // In OAC portal we have separate Application model for the "Pending" state. 
-    // BUT the old API returned "pendingApplications" from tDarts side? 
-    // Let's check old code... 
-    // "ClubModel.find({ verified: false, isActive: true })" was used.
-    const pendingClubs = await ClubModel.find({ verified: false, isActive: true })
-        .select('name description location createdAt contact')
-        .sort({ createdAt: -1 })
-        .limit(10)
-        .lean();
+    // 6. Pending Applications from OAC Application Model (NOT tDarts clubs)
+    const { Application } = await import('@/models');
+    const pendingApplications = await Application.find({ 
+        status: 'submitted' 
+    })
+    .select('clubName applicantName applicantEmail submittedAt')
+    .sort({ submittedAt: -1 })
+    .limit(10)
+    .lean();
 
     // 7. Growth
     const clubGrowth = getGrowthData(verifiedClubs);
     const tournamentGrowth = getGrowthData(verifiedTournaments);
+
+    // 8. Integrity - Suspicious Matches (matches with manual overrides or flags)
+    const suspiciousMatches = await MatchModel.find({
+        $or: [
+            { 'manualOverride.applied': true },
+            { 'flags.suspicious': true },
+            { 'flags.reported': true }
+        ]
+    })
+    .populate('tournamentId', 'tournamentSettings.name tournamentId')
+    .sort({ 'manualOverride.timestamp': -1, updatedAt: -1 })
+    .limit(100)
+    .lean();
 
     return {
         globalStats: { 
@@ -352,12 +466,32 @@ export const getOacStats = async () => {
             date: new Date(log.timestamp).toLocaleTimeString('hu-HU', { hour: '2-digit', minute:'2-digit' }),
             type: log.level === 'warn' ? 'warning' : 'info'
         })),
-        pendingApplications: pendingClubs.map((app: any) => ({
+        pendingApplications: pendingApplications.map((app: any) => ({
             _id: app._id,
-            clubName: app.name,
+            clubName: app.clubName,
             status: 'submitted',
-            submittedAt: app.createdAt
-        }))
+            submittedAt: app.submittedAt
+        })),
+        integrityStats: {
+            totalFlagged: suspiciousMatches.length,
+            suspiciousMatches: suspiciousMatches.map((match: any) => ({
+                _id: match._id,
+                tournamentName: match.tournamentId?.tournamentSettings?.name || 'Unknown',
+                tournamentCode: match.tournamentId?.tournamentId || 'N/A',
+                player1: {
+                    playerId: { name: match.player1?.name || 'Player 1' },
+                    score: match.player1?.score || 0
+                },
+                player2: {
+                    playerId: { name: match.player2?.name || 'Player 2' },
+                    score: match.player2?.score || 0
+                },
+                overrideType: match.manualOverride?.reason || 'Flag',
+                overrideBy: match.manualOverride?.by || 'System',
+                overrideTimestamp: match.manualOverride?.timestamp || match.updatedAt,
+                flags: match.flags || {}
+            }))
+        }
     };
 };
 

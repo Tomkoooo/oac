@@ -249,11 +249,80 @@ export async function POST(request: Request) {
                      </div>
                  </div>
                  `
-              });
+      });
           }
        } catch (mailError) {
          console.error('Failed to send transfer instruction email:', mailError);
        }
+    }
+
+    // Notify Office/Admin about new application
+    try {
+      const adminEmail = 'office@magyardarts.hu';
+      const paymentInfo = application.paymentMethod === 'transfer' 
+        ? `Banki átutalás (Közlemény: ${application.transferReference})` 
+        : 'Stripe (Kártyás fizetés)';
+      
+      await sendEmail({
+        to: adminEmail,
+        subject: `Új OAC Jelentkezés - ${clubName}`,
+        text: `
+Új klub jelentkezés érkezett az OAC rendszerbe.
+
+Klub adatai:
+- Név: ${clubName}
+- Azonosító: ${clubId}
+
+Jelentkező adatai:
+- Név: ${applicantName}
+- Email: ${applicantEmail}
+
+Számlázási adatok:
+- Név: ${billingName}
+- Cím: ${billingZip} ${billingCity}, ${billingAddress}
+- Adószám: ${billingTaxNumber || 'Nincs megadva'}
+- Email: ${billingEmail}
+
+Fizetési mód: ${paymentInfo}
+Status: ${application.status}
+        `,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #dc2626; border-bottom: 2px solid #dc2626; padding-bottom: 10px;">Új OAC Jelentkezés</h2>
+            <p>Új klub jelentkezés érkezett az OAC rendszerbe.</p>
+            
+            <h3 style="margin-top: 20px; color: #374151;">Klub adatai</h3>
+            <ul style="list-style: none; padding-left: 0;">
+              <li><strong>Név:</strong> ${clubName}</li>
+              <li><strong>ID:</strong> <code style="background: #f3f4f6; padding: 2px 4px;">${clubId}</code></li>
+            </ul>
+
+            <h3 style="margin-top: 20px; color: #374151;">Jelentkező</h3>
+            <ul style="list-style: none; padding-left: 0;">
+              <li><strong>Név:</strong> ${applicantName}</li>
+              <li><strong>Email:</strong> ${applicantEmail}</li>
+            </ul>
+
+            <h3 style="margin-top: 20px; color: #374151;">Számlázási adatok</h3>
+            <div style="background: #f9fafb; padding: 15px; border-radius: 6px;">
+              <p style="margin: 5px 0;"><strong>Név:</strong> ${billingName}</p>
+              <p style="margin: 5px 0;"><strong>Cím:</strong> ${billingZip} ${billingCity}, ${billingAddress}</p>
+              <p style="margin: 5px 0;"><strong>Adószám:</strong> ${billingTaxNumber || 'Nincs megadva'}</p>
+              <p style="margin: 5px 0;"><strong>Email:</strong> ${billingEmail}</p>
+            </div>
+
+            <h3 style="margin-top: 20px; color: #374151;">Fizetés</h3>
+            <p><strong>Mód:</strong> ${paymentInfo}</p>
+            <p><strong>Státusz:</strong> <span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 9999px; font-size: 0.875rem;">${application.status}</span></p>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 0.875rem; color: #6b7280; text-align: center;">
+              Ez egy automatikus értesítés az OAC Rendszerből.
+            </div>
+          </div>
+        `
+      });
+    } catch (adminMailError) {
+      console.error('Failed to notify admin about new application:', adminMailError);
     }
 
     return NextResponse.json({ application, checkoutUrl });

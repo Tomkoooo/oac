@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Building2, CreditCard, Banknote, Loader2, Info, Check, X } from "lucide-react";
+import { Building2, CreditCard, Banknote, Loader2, Info, Check, X, AlertCircle } from "lucide-react";
+import { featureFlags } from "@/lib/featureFlags";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,7 @@ export default function ApplicationModal({ clubId, clubName, onClose, onSuccess 
     billingAddress: '',
     billingTaxNumber: '',
     billingEmail: '',
-    paymentMethod: 'stripe' as 'stripe' | 'transfer',
+    paymentMethod: (featureFlags.isStripeEnabled() ? 'stripe' : 'transfer') as 'stripe' | 'transfer',
     consent: false
   });
 
@@ -171,35 +172,54 @@ export default function ApplicationModal({ clubId, clubName, onClose, onSuccess 
                 Fizetési Mód
                </h3>
                
-               <RadioGroup 
-                 value={formData.paymentMethod} 
-                 onValueChange={(val) => setFormData({...formData, paymentMethod: val as 'stripe' | 'transfer'})}
-                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
-               >
-                  <Label
-                    htmlFor="stripe"
-                    className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all ${formData.paymentMethod === 'stripe' ? 'border-primary bg-primary/5' : ''}`}
-                  >
-                    <RadioGroupItem value="stripe" id="stripe" className="sr-only" />
-                    <CreditCard className="mb-3 h-6 w-6" />
-                    <div className="text-center">
-                        <div className="font-semibold">Bankkártya (Stripe)</div>
-                        <div className="text-xs text-muted-foreground mt-1">Azonnali jóváhagyás & automata számlázás</div>
-                    </div>
-                  </Label>
+                <RadioGroup 
+                  value={formData.paymentMethod} 
+                  onValueChange={(val) => setFormData({...formData, paymentMethod: val as 'stripe' | 'transfer'})}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                >
+                  <div className="relative">
+                    <RadioGroupItem 
+                      value="stripe" 
+                      id="stripe" 
+                      className="sr-only" 
+                      disabled={!featureFlags.isStripeEnabled()}
+                    />
+                    <Label
+                      htmlFor="stripe"
+                      className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 transition-all ${
+                        !featureFlags.isStripeEnabled() 
+                          ? 'opacity-50 cursor-not-allowed bg-muted/50' 
+                          : 'hover:bg-accent hover:text-accent-foreground cursor-pointer'
+                      } ${formData.paymentMethod === 'stripe' ? 'border-primary bg-primary/5' : ''}`}
+                    >
+                      <CreditCard className="mb-3 h-6 w-6" />
+                      <div className="text-center">
+                          <div className="font-semibold">Bankkártya (Stripe)</div>
+                          <div className="text-xs text-muted-foreground mt-1">Azonnali jóváhagyás & automata számlázás</div>
+                          {!featureFlags.isStripeEnabled() && (
+                            <div className="text-xs text-destructive font-medium mt-2 flex items-center justify-center gap-1">
+                              <AlertCircle className="h-3 w-3" />
+                              Stripe jelenleg nem elérhető
+                            </div>
+                          )}
+                      </div>
+                    </Label>
+                  </div>
                   
-                  <Label
-                    htmlFor="transfer"
-                    className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all ${formData.paymentMethod === 'transfer' ? 'border-primary bg-primary/5' : ''}`}
-                  >
+                  <div className="relative">
                     <RadioGroupItem value="transfer" id="transfer" className="sr-only" />
-                    <Banknote className="mb-3 h-6 w-6" />
-                    <div className="text-center">
-                        <div className="font-semibold">Banki Átutalás</div>
-                        <div className="text-xs text-muted-foreground mt-1">Admin jóváhagyás szükséges</div>
-                    </div>
-                  </Label>
-               </RadioGroup>
+                    <Label
+                      htmlFor="transfer"
+                      className={`flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all ${formData.paymentMethod === 'transfer' ? 'border-primary bg-primary/5' : ''}`}
+                    >
+                      <Banknote className="mb-3 h-6 w-6" />
+                      <div className="text-center">
+                          <div className="font-semibold">Banki Átutalás</div>
+                          <div className="text-xs text-muted-foreground mt-1">Admin jóváhagyás szükséges</div>
+                      </div>
+                    </Label>
+                  </div>
+                </RadioGroup>
             </div>
 
             <Separator />

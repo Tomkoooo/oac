@@ -316,20 +316,21 @@ function DashboardContent() {
                                    )}
                                     
                                     {application?.paymentMethod === 'transfer' && application?.paymentStatus === 'pending' && application?.transferReference && (
-                                       <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md text-xs space-y-2">
-                                           <div className="font-semibold text-blue-800 flex items-center gap-2">
+                                       <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-lg text-xs space-y-3">
+                                           <div className="font-semibold text-primary flex items-center gap-2">
                                              <AlertCircle className="h-4 w-4" />
                                              <span className="uppercase tracking-wider font-bold">Utalási információk</span>
                                            </div>
-                                           <div className="space-y-1 text-blue-900 border-l-2 border-blue-300 pl-2">
-                                              <p>Bank: <span className="font-semibold">{process.env.NEXT_PUBLIC_BANK_NAME || 'OTP Bank'}</span></p>
-                                              <p>Számlaszám: <span className="font-mono font-bold">{process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || '11700000-00000000'}</span></p>
-                                              <p>Összeg: <span className="font-bold">{new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(Number(process.env.NEXT_PUBLIC_CLUB_APPLICATION_PRICE_NET || 20000))}</span></p>
+                                           <div className="space-y-1.5 text-foreground/80 border-l-2 border-primary/30 pl-3">
+                                              <p>Bank: <span className="font-medium text-foreground">{process.env.NEXT_PUBLIC_BANK_NAME || 'OTP Bank'}</span></p>
+                                              <p>Számlatulajdonos: <span className="font-medium text-foreground">{process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME || 'Magyar Autóséletért Egyesület'}</span></p>
+                                              <p>Számlaszám: <span className="font-mono font-medium text-foreground">{process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || '11700000-00000000'}</span></p>
+                                              <p>Összeg: <span className="font-bold text-white">{new Intl.NumberFormat('hu-HU', { style: 'currency', currency: 'HUF', maximumFractionDigits: 0 }).format(Number(process.env.NEXT_PUBLIC_CLUB_APPLICATION_PRICE_NET || 20000))}</span></p>
                                            </div>
-                                           <div className="bg-white p-3 rounded border border-blue-200 text-center shadow-sm">
+                                           <div className="bg-muted/50 p-3 rounded border border-border/50 text-center">
                                               <div className="text-[10px] uppercase text-muted-foreground font-bold mb-1">Közleménybe írandó Kód</div>
-                                              <div className="text-xl font-mono font-black tracking-[0.2em] text-primary">{application!.transferReference}</div>
-                                              <div className="text-[10px] text-destructive font-semibold mt-1">Csak ezt a 6 jegyű kódot írd a közleménybe!</div>
+                                              <div className="text-xl font-mono font-black tracking-[0.2em] text-white">{application!.transferReference}</div>
+                                              <div className="text-[10px] text-destructive/90 font-medium mt-1">Csak ezt a 6 jegyű kódot írd a közleménybe!</div>
                                            </div>
                                        </div>
                                     )}

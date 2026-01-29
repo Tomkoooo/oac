@@ -36,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/admin/PageHeader";
 
 export default function IntegrityPage() {
   const [loading, setLoading] = useState(true);
@@ -99,21 +100,17 @@ export default function IntegrityPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-destructive flex items-center gap-2">
-            <ShieldAlert className="h-8 w-8" />
-            Integritás és Fair Play
-          </h1>
-          <p className="text-muted-foreground">
-            Manuális beavatkozások és gyanús mérkőzések felügyelete a tDarts rendszerben.
-          </p>
-        </div>
+    <div className="p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-500">
+      <PageHeader 
+        title="Integritás és Fair Play"
+        description="Manuális beavatkozások és gyanús mérkőzések felügyelete a tDarts rendszerben."
+        icon={ShieldAlert}
+        badge={{ count: stats?.totalFlagged || 0, label: "megjelölt", variant: "destructive" }}
+      >
         <Button variant="outline" size="icon" onClick={fetchIntegrityData} disabled={refreshing}>
-            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
         </Button>
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Top Offenders Card */}

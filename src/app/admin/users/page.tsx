@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/admin/PageHeader";
+import { Users } from "lucide-react";
 
 interface AdminUser {
   _id: string;
@@ -137,13 +139,12 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin Felhasználók</h1>
-          <p className="text-muted-foreground">Kezeld az OAC portal adminisztrátorait</p>
-        </div>
-
+    <div className="p-6 lg:p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
+      <PageHeader 
+        title="Admin Felhasználók" 
+        description="Kezeld az OAC portal adminisztrátorait"
+        icon={Users}
+      >
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 bg-warning text-warning-foreground hover:bg-warning/90">
@@ -202,7 +203,8 @@ export default function UsersPage() {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
+      </PageHeader>
+
 
       {/* Password Change Dialog */}
       <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>

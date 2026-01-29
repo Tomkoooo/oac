@@ -61,12 +61,13 @@ export interface RankingPlayer {
 /**
  * Fetch verified data directly from database
  */
-export const getPublicData = async (type: 'leagues' | 'tournaments' | 'clubs' | 'all' = 'all') => {
+export const getPublicData = async (type: 'leagues' | 'tournaments' | 'clubs' | 'rankings' | 'all' = 'all') => {
   try {
-    const result: { leagues: League[]; tournaments: Tournament[]; clubs: Club[] } = {
+    const result: { leagues: League[]; tournaments: Tournament[]; clubs: Club[]; rankings?: RankingPlayer[] } = {
       leagues: [],
       tournaments: [],
-      clubs: []
+      clubs: [],
+      rankings: []
     };
 
     const promises = [];
@@ -93,6 +94,16 @@ export const getPublicData = async (type: 'leagues' | 'tournaments' | 'clubs' | 
           result.tournaments = (data.tournaments as unknown) as Tournament[] || [];
         })
       );
+    }
+    
+    if (type === 'rankings' || type === 'all') {
+        const { getPublicRankings } = await import('./tdarts-data');
+        promises.push(
+            getPublicRankings().then(data => {
+                // @ts-ignore
+                result.rankings = data;
+            })
+        );
     }
 
     await Promise.allSettled(promises);

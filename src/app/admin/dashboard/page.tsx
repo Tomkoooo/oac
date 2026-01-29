@@ -80,10 +80,33 @@ export default function AdminDashboardPage() {
         description={`Üdvözöljük, ${session?.user?.name || "Admin"}. Itt áttekintheti a rendszer állapotát.`}
         icon={Gauge}
       >
-        <Button variant="outline" size="sm" onClick={() => fetchDashboardData()} disabled={refreshing} className="gap-2">
-            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-            Frissítés
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => fetchDashboardData()} disabled={refreshing} className="gap-2">
+              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+              Frissítés
+          </Button>
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            onClick={async () => {
+              try {
+                const res = await fetch('/api/admin/stats/snapshot', { method: 'POST' });
+                if (res.ok) {
+                  toast.success('Statisztikai pillanatkép létrehozva!');
+                  fetchDashboardData();
+                } else {
+                  throw new Error('Snapshot failed');
+                }
+              } catch (error) {
+                toast.error('Nem sikerült létrehozni a pillanatképet');
+              }
+            }}
+            className="gap-2"
+          >
+            <ChartBar className="h-4 w-4" />
+            Pillanatkép
+          </Button>
+        </div>
       </PageHeader>
 
       <KpiStats stats={kpiData} loading={loading} />

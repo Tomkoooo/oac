@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { EmailComposerModal } from "@/components/admin/EmailComposerModal";
+import { PageHeader } from "@/components/admin/PageHeader";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -171,13 +172,13 @@ export default function ApplicationsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Jelentkezések</h1>
-          <p className="text-muted-foreground">Kezeld a klubok OAC liga jelentkezéseit</p>
-        </div>
-        
+    <div className="p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-500">
+      <PageHeader 
+        title="Jelentkezések"
+        description="Kezeld a klubok OAC liga jelentkezéseit"
+        icon={FileText}
+        badge={{ count: pendingApps.length, label: "függőben", isWarning: true }}
+      >
         <div className="relative w-full md:w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
@@ -187,7 +188,7 @@ export default function ApplicationsPage() {
             className="pl-10 bg-card/40 backdrop-blur-sm border-border/40"
           />
         </div>
-      </div>
+      </PageHeader>
 
       <Tabs defaultValue="pending" className="space-y-6">
         <TabsList className="bg-card/50 backdrop-blur-md border border-border/40 p-1">
