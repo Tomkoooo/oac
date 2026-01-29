@@ -13,7 +13,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "OAC Portál - Magyar Nemzeti Amatőr Liga",
+    default: "Országos Amatőr Cashout Liga",
     template: "%s | OAC Portál"
   },
   description: "Csatlakozz Magyarország vezető amatőr darts ligájához. Hivatalos jelentkezési portál a tDarts platformmal integrálva.",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   authors: [{ name: "OAC & tDarts" }],
   creator: "OAC",
   publisher: "OAC",
-  metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3001"),
+  metadataBase: new URL(process.env.NEXTAUTH_URL || "https://amatordarts.hu"),
   themeColor: "#b62441",
   colorScheme: "dark",
   robots: {
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "hu_HU",
     siteName: "OAC Portál",
-    title: "OAC Portál - Magyar Nemzeti Amatőr Liga",
+    title: "OAC Portál - Országos Amatőr Cashout Liga",
     description: "Csatlakozz Magyarország vezető amatőr darts ligájához",
   },
 };
