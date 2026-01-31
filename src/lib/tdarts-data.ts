@@ -347,43 +347,39 @@ export const getPublicRankings = async () => {
 };
 
 // Growth Data Helper
+// Growth Data Helper
 function getGrowthData(items: any[]) {
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    sixMonthsAgo.setDate(1);
-
-    const recentItems = items.filter(item => new Date(item.createdAt) >= sixMonthsAgo);
-
-    const monthlyCounts: { [key: string]: number } = {};
-    const monthKeys = [];
-    for(let i=0; i<6; i++) {
-        const d = new Date(sixMonthsAgo);
-        d.setMonth(d.getMonth() + i);
-        const key = d.toLocaleDateString('hu-HU', { year: 'numeric', month: 'short' });
-        monthlyCounts[key] = 0;
-        monthKeys.push(key);
+    // Generate last 6 months buckets
+    const today = new Date();
+    const headers: string[] = [];
+    const buckets: { start: Date, end: Date, label: string }[] = [];
+    
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const nextMonth = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+        const label = d.toLocaleDateString('hu-HU', { year: 'numeric', month: 'short' });
+        
+        headers.push(label);
+        buckets.push({ start: d, end: nextMonth, label });
     }
 
-    let runningTotal = items.filter(item => new Date(item.createdAt) < sixMonthsAgo).length;
-    recentItems.sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    // Sort items for accurate running total calculation
+    const sortedItems = [...items].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    
+    // Calculate initial running total from before the first bucket
+    const firstBucketStart = buckets[0].start;
+    let runningTotal = sortedItems.filter(item => new Date(item.createdAt) < firstBucketStart).length;
 
-    const result = [];
-    for(let i=0; i<monthKeys.length; i++) {
-        const d = new Date(sixMonthsAgo);
-        d.setMonth(d.getMonth() + i);
-        const label = monthKeys[i];
-        
-        const nextMonth = new Date(d);
-        nextMonth.setMonth(nextMonth.getMonth() + 1);
-        
-        const countInMonth = items.filter(item => {
-            const c = new Date(item.createdAt);
-            return c >= d && c < nextMonth;
+    const result = buckets.map(bucket => {
+        const inMonth = sortedItems.filter(item => {
+            const d = new Date(item.createdAt);
+            return d >= bucket.start && d < bucket.end;
         }).length;
+        
+        runningTotal += inMonth;
+        return { name: bucket.label, value: runningTotal };
+    });
 
-        runningTotal += countInMonth;
-        result.push({ name: label, value: runningTotal });
-    }
     return result;
 }
 
@@ -396,13 +392,13 @@ export const getOacStats = async () => {
     // 2. Verified Tournaments
     const verifiedTournaments = await TournamentModel.find({
         verified: true,
-        isDeleted: false,
-        isCancelled: false,
+        isDeleted: { $ne: true },
+        isCancelled: { $ne: true },
     }).select('_id createdAt').lean();
     
     // 3. Unique Players
     const uniquePlayersResult = await TournamentModel.aggregate([
-        { $match: { verified: true, isDeleted: false, isCancelled: false } },
+        { $match: { verified: true, isDeleted: { $ne: true }, isCancelled: { $ne: true } } },
         { $unwind: '$tournamentPlayers' },
         { $group: { _id: null, uniquePlayers: { $addToSet: '$tournamentPlayers.playerReference' } } }
     ]);
@@ -443,6 +439,25 @@ export const getOacStats = async () => {
     .sort({ 'manualOverride.timestamp': -1, updatedAt: -1 })
     .limit(100)
     .lean();
+
+    // 9. Player Stats - Get all ranked players
+    const rankedPlayers = await PlayerModel.find({
+        'stats.oacMmr': { $ne: 800 },
+        isRegistered: true
+    })
+    .select('name stats')
+    .sort({ 'stats.oacMmr': -1 })
+    .lean();
+
+    const playerStats = rankedPlayers.map((player: any) => ({
+        name: player.name || 'Unknown',
+        oacMmr: player.stats?.oacMmr || 800,
+        tournamentsPlayed: player.stats?.oacTournamentsPlayed || 0,
+        average: player.stats?.oacAverage || 0,
+        maxAverage: player.stats?.oacMaxAverage || 0,
+        highestCheckout: player.stats?.oacHighestCheckout || 0,
+        oneEighties: player.stats?.oac180s || 0
+    }));
 
     return {
         globalStats: { 
@@ -491,7 +506,8 @@ export const getOacStats = async () => {
                 overrideTimestamp: match.manualOverride?.timestamp || match.updatedAt,
                 flags: match.flags || {}
             }))
-        }
+        },
+        playerStats
     };
 };
 

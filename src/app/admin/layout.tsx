@@ -19,9 +19,11 @@ export default async function AdminLayout({
   return (
     <AdminAuthProvider session={session}>
       <div className="flex min-h-screen bg-background relative selection:bg-primary/20">
-        <Sidebar />
-        <main className="flex-1 w-full min-h-screen overflow-x-hidden">
-            {children}
+        <Sidebar className="z-40" />
+        <main className="flex-1 w-full min-h-screen overflow-x-hidden pt-16 lg:pt-0 lg:pl-0 p-4 lg:p-8">
+            <div className="max-w-7xl mx-auto">
+                {children}
+            </div>
         </main>
       </div>
     </AdminAuthProvider>

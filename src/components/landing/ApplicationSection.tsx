@@ -20,7 +20,7 @@ const ApplicationSection = () => {
                 Készen állsz a <span className="text-primary">Megmérettetésre?</span>
               </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Ne maradj le a következő szezonról. Csatlakozz most a Magyar Nemzeti Amatőr Ligához és mutasd meg, mit tudsz!
+                Ne maradj le a következő szezonról. Csatlakozz most az Országos Amatőr Cashout Ligához és mutasd meg, mit tudsz!
               </p>
           </div>
 

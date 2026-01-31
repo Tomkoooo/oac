@@ -160,9 +160,9 @@ export default function StatsPage() {
         <CardHeader className="bg-muted/10 border-b border-border/40">
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-warning" />
-            Legjobb Teljesítmények (Top 10)
+            Országos Ranglista (OAC MMR)
           </CardTitle>
-          <CardDescription>A legmagasabb átlagú játékosok az OAC fordulókon</CardDescription>
+          <CardDescription>A teljes OAC játékos rangsor MMR alapján</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
@@ -179,7 +179,7 @@ export default function StatsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {stats?.playerStats?.slice(0, 10).map((player: any, index: number) => (
+              {stats?.playerStats?.map((player: any, index: number) => (
                 <TableRow key={index} className="border-border/40 hover:bg-muted/30">
                   <TableCell className="font-bold">
                      <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] ${

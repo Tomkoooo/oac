@@ -394,7 +394,7 @@ function DashboardContent() {
                     <div className="space-y-1">
                         <h3 className="text-xl font-semibold">Még nincs klubod</h3>
                         <p className="text-muted-foreground max-w-sm mx-auto">
-                            Hozz létre egy klubot a tDarts platformon, hogy jelentkezhess a Magyar Nemzeti Amatőr Ligába.
+                            Hozz létre egy klubot a tDarts platformon, hogy jelentkezhess az Országos Amatőr Cashout Ligába.
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-3 pt-4">

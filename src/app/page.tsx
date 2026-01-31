@@ -1,5 +1,5 @@
 import HeroSection from "@/components/landing/HeroSection";
-import LeagueListSection from "@/components/landing/LeagueListSection";
+import PrizePoolSection from "@/components/landing/PrizePoolSection";
 import RulesSection from "@/components/landing/RulesSection";
 import ApplicationSection from "@/components/landing/ApplicationSection";
 import { HashScrollHandler } from "@/components/landing/HashScrollHandler";
@@ -14,7 +14,7 @@ export default async function Home() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <HashScrollHandler />
       <HeroSection />
-      <LeagueListSection />
+      <PrizePoolSection />
       <RulesSection rules={rules} />
       <ApplicationSection />
     </div>
