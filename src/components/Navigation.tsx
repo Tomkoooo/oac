@@ -39,38 +39,48 @@ export default function Navigation() {
     }
   };
 
-  const NavLinks = ({ mobile = false }: { mobile?: boolean }) => (
-    <>
-      <Link 
-        href="/#hero" 
-        className={`${mobile ? 'text-lg py-2' : 'text-sm'} text-muted-foreground hover:text-primary transition-colors`}
-        onClick={() => mobile && setIsOpen(false)}
-      >
-        Főoldal
-      </Link>
-      <Link 
-        href="https://tdarts.hu/search?isOac=true" 
-        className={`${mobile ? 'text-lg py-2' : 'text-sm'} text-muted-foreground hover:text-primary transition-colors`}
-        onClick={() => mobile && setIsOpen(false)}
-      >
-        Felfedezés
-      </Link>
-      <Link 
-        href="/#rules" 
-        className={`${mobile ? 'text-lg py-2' : 'text-sm'} text-muted-foreground hover:text-primary transition-colors`}
-        onClick={() => mobile && setIsOpen(false)}
-      >
-        Szabályok
-      </Link>
-      <Link 
-        href="/#apply" 
-        className={`${mobile ? 'text-lg py-2' : 'text-sm'} text-muted-foreground hover:text-primary transition-colors`}
-        onClick={() => mobile && setIsOpen(false)}
-      >
-        Jelentkezés
-      </Link>
-    </>
-  );
+  const NavLinks = ({ mobile = false }: { mobile?: boolean }) => {
+    const links = [
+      { href: "/#hero", label: "Főoldal" },
+      { href: "https://tdarts.hu/search?isOac=true", label: "Felfedezés" },
+      { href: "/#rules", label: "Szabályok" },
+      { href: "/#apply", label: "Jelentkezés" },
+    ];
+
+    if (mobile) {
+      return (
+        <>
+          {links.map((link) => (
+            <Button
+              key={link.href}
+              asChild
+              variant="ghost"
+              className="w-full justify-start h-12 text-base font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-xl"
+              onClick={() => setIsOpen(false)}
+            >
+              <Link href={link.href}>
+                {link.label}
+              </Link>
+            </Button>
+          ))}
+        </>
+      );
+    }
+
+    return (
+      <>
+        {links.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            {link.label}
+          </Link>
+        ))}
+      </>
+    );
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-background/80 backdrop-blur-md">
@@ -105,7 +115,7 @@ export default function Navigation() {
                 </SheetTitle>
               </SheetHeader>
               <div className="flex flex-col space-y-6">
-                <div className="flex flex-col space-y-2">
+                <div className="flex flex-col space-y-2 px-2">
                     <NavLinks mobile />
                 </div>
                 
@@ -113,10 +123,7 @@ export default function Navigation() {
                     {loading ? (
                         <div className="h-10 w-full bg-muted animate-pulse rounded-xl" />
                     ) : isAuthenticated ? (
-                        <div className="space-y-3">
-                            <div className="px-2 pb-2">
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Fiók</p>
-                            </div>
+                        <div className="space-y-3 px-2">
                             <Button asChild variant="default" className="w-full justify-start h-12 text-base font-medium shadow-lg shadow-primary/20 rounded-xl" size="lg">
                                 <Link href="/dashboard" onClick={() => setIsOpen(false)}>
                                     <IconUser className="w-5 h-5 mr-3" />
@@ -140,7 +147,7 @@ export default function Navigation() {
                             </Button>
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-3 px-2">
                             <Button asChild variant="default" className="w-full h-12 text-base font-medium shadow-lg shadow-primary/20 rounded-xl" size="lg">
                                 <Link href="/login" onClick={() => setIsOpen(false)}>
                                     Bejelentkezés
